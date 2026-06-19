@@ -1,0 +1,32 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    RewriteEngine On
+    
+    # ⭐ IMPORTANT: Change this to match your actual folder name
+    RewriteBase /pairifamily/
+
+    # Pass Authorization header to PHP
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+    # Only skip rewriting for exactly /update or /update/
+    RewriteCond %{REQUEST_URI} ^/update/?$ [NC]
+    RewriteRule ^ - [L]
+
+    # Skip existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Send static file requests to /public/
+    RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Everything else goes to Laravel's index.php (NOT server.php)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>

@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Http\Resources;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class UserResource extends JsonResource
+{
+    public static function make(User $user): array
+    {
+        return (new self($user))->toArray(request());
+    }
+
+    public function toArray(Request $request): array
+    {
+        $photos = collect($this->photos ?? [])->map(fn ($photo) => [
+            'url' => asset('storage/' . ($photo['path'] ?? '')),
+            'path' => $photo['path'] ?? null,
+            'is_main' => (bool) ($photo['is_main'] ?? false),
+        ])->values()->all();
+
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'is_verified' => (bool) $this->is_verified,
+            'phone_verified' => (bool) $this->phone_verified,
+            'gender' => $this->gender,
+            'birthday' => $this->birthday?->format('Y-m-d'),
+            'age' => $this->age,
+            'country' => $this->country,
+            'city' => $this->city,
+            'bio' => $this->bio,
+            'profile_photo' => $this->profile_photo,
+            'photos' => $photos,
+            'profile_completed' => (bool) $this->profile_completed,
+            'profile_step' => (int) $this->profile_step,
+            'qualification' => $this->qualification,
+            'field_of_study' => $this->field_of_study,
+            'university' => $this->university,
+            'graduation_year' => $this->graduation_year,
+            'employment_type' => $this->employment_type,
+            'job_title' => $this->job_title,
+            'company' => $this->company,
+            'monthly_income' => $this->monthly_income,
+            'residential_status' => $this->residential_status,
+            'height' => $this->height,
+            'weight' => $this->weight,
+            'body_type' => $this->body_type,
+            'complexion' => $this->complexion,
+            'physical_disability' => (bool) $this->physical_disability,
+            'religion' => $this->religion,
+            'community' => $this->community,
+            'sect' => $this->sect,
+            'mother_tongue' => $this->mother_tongue,
+            'other_languages' => $this->other_languages ?? [],
+            'interests' => $this->interests ?? [],
+            'marital_status' => $this->marital_status,
+            'social_provider' => $this->social_provider,
+            'status' => $this->status,
+            'location' => trim(implode(', ', array_filter([$this->city, $this->country]))),
+            'profession' => $this->job_title,
+            'created_at' => $this->created_at?->toIso8601String(),
+        ];
+    }
+}

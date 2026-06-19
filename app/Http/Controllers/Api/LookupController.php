@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+
+class LookupController extends Controller
+{
+    public function countries(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => config('pairi_family.countries'),
+        ]);
+    }
+
+    public function profileOptions(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'countries' => config('pairi_family.countries'),
+                'qualifications' => config('pairi_family.qualifications'),
+                'employment_types' => config('pairi_family.employment_types'),
+                'monthly_income_ranges' => config('pairi_family.monthly_income_ranges'),
+                'body_types' => config('pairi_family.body_types'),
+                'complexions' => config('pairi_family.complexions'),
+                'religions' => config('pairi_family.religions'),
+                'marital_statuses' => config('pairi_family.marital_statuses'),
+                'residential_statuses' => config('pairi_family.residential_statuses'),
+                'mother_tongues' => config('pairi_family.mother_tongues'),
+                'languages' => config('pairi_family.languages'),
+                'genders' => config('pairi_family.genders'),
+            ],
+        ]);
+    }
+}

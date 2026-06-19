@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Models\SocialiteCredential;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
+use Laravel\Socialite\Facades\Socialite;
+
+class SocialAuthController extends Controller
+{
+    public function login(Request $request): JsonResponse
+    {
+        $request->validate([
+            'provider' => 'required|in:google,apple',
+            'token' => 'required|string',
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email',
+        ]);
+
+        try {
+            $socialUser = Socialite::driver($request->provider)->stateless()->userFromToken($request->token);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid social login token.',
+            ], 401);
+        }
+
+        $email = $socialUser->getEmail() ?: $request->email;
+        $name = $socialUser->getName() ?: $request->name ?: 'Pairi Family User';
+
+        if (!$email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email is required for social login.',
+            ], 422);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'password' => Hash::make(Str::random(32)),
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'terms_accepted_at' => now(),
+                'social_provider' => $request->provider,
+                'social_id' => $socialUser->getId(),
+                'status' => 'active',
+            ]);
+        } else {
+            $user->update([
+                'social_provider' => $request->provider,
+                'social_id' => $socialUser->getId(),
+                'is_verified' => true,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ]);
+        }
+
+        SocialiteCredential::updateOrCreate(
+            ['user_id' => $user->id, 'provider_name' => $request->provider],
+            ['provider_id' => $socialUser->getId(), 'access_token' => $request->token]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged in successfully.',
+            'user' => UserResource::make($user->fresh()),
+            'token' => $user->createToken('auth')->plainTextToken,
+        ]);
+    }
+}
