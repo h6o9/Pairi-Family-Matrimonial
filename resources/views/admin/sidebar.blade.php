@@ -95,6 +95,22 @@
                     <span>{{ __('All Users') }}</span>
                 </a>
             </li>
+
+            <li class="menu-header">{{ __('Features') }}</li>
+            <li class="{{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.subscriptions.index') }}">
+                    <i class="fas fa-gem"></i>
+                    <span>{{ __('Subscriptions') }}</span>
+                </a>
+            </li>
+            
+            <li class="menu-header">{{ __('Configuration') }}</li>
+            <li class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings.index') }}">
+                    <i class="fas fa-cogs"></i>
+                    <span>{{ __('System Settings') }}</span>
+                </a>
+            </li>
         </ul>
     </aside>
 </div>

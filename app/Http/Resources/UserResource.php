@@ -8,7 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    public static function make(User $user): array
+    public static function toPayload(User $user): array
     {
         return (new self($user))->toArray(request());
     }

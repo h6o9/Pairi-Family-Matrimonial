@@ -7,7 +7,15 @@ return [
     ],
 
     'qualifications' => [
-        "Bachelor's Degree", "Master's Degree", 'PhD', 'Diploma', 'High School',
+        'Any', "Bachelor's Degree", "Master's Degree", 'PhD', 'Diploma', 'High School',
+    ],
+
+    'professions' => [
+        'Any', 'Software Engineer', 'Doctor', 'Engineer', 'Teacher', 'Designer', 'Business',
+    ],
+
+    'filter_cities' => [
+        'Lahore', 'Karachi', 'Islamabad', 'Multan', 'Rawalpindi', 'Faisalabad',
     ],
 
     'employment_types' => [

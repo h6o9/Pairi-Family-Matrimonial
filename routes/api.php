@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LookupController;
+use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ShortlistController;
 use App\Http\Controllers\Api\SocialAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -88,6 +90,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/photos', [ProfileController::class, 'uploadPhotos']);
         Route::post('/update', [ProfileController::class, 'updateProfile']);
         Route::post('/complete', [ProfileController::class, 'completeProfile']);
+    });
+
+    Route::prefix('matches')->group(function () {
+        Route::get('/home', [MatchController::class, 'home']);
+        Route::get('/search', [MatchController::class, 'search']);
+        Route::get('/filter', [MatchController::class, 'filter']);
+        Route::get('/{user}', [MatchController::class, 'show']);
+    });
+
+    Route::get('/shortlist', [ShortlistController::class, 'index']);
+    Route::post('/shortlist/{user}/interest', [ShortlistController::class, 'sendInterest']);
+    Route::post('/shortlist/{user}/pass', [ShortlistController::class, 'pass']);
+
+    // Subscriptions and Referrals
+    Route::get('/subscriptions', [\App\Http\Controllers\Api\SubscriptionController::class, 'index']);
+    Route::get('/referrals/stats', [\App\Http\Controllers\Api\ReferralController::class, 'stats']);
+    Route::get('/referrals/history', [\App\Http\Controllers\Api\ReferralController::class, 'history']);
+
+    // Admin Routes
+    Route::prefix('admin')->group(function () {
+        Route::apiResource('subscriptions', \App\Http\Controllers\Api\Admin\SubscriptionController::class);
+        Route::get('settings', [\App\Http\Controllers\Api\Admin\SettingController::class, 'index']);
+        Route::post('settings', [\App\Http\Controllers\Api\Admin\SettingController::class, 'update']);
     });
 });
 

@@ -12,8 +12,8 @@
             </div>
         </div>
         <div class="section-body">
-            <div class="card">
-                <div class="card-body">
+                    <div class="card">
+                        <div class="card-body">
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-2 text-center">
                             @if($user->profile_photo)
@@ -22,7 +22,7 @@
                                 <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width:110px;height:110px;">
                                     <i class="fas fa-user fa-3x text-muted"></i>
                                 </div>
-                            @endif
+                                        @endif
                         </div>
                         <div class="col-md-7">
                             <h3 class="mb-1">{{ $user->name }} @if($user->age), {{ $user->age }}@endif</h3>
@@ -31,39 +31,39 @@
                                 @if($user->job_title) &bull; {{ $user->job_title }} @endif
                             </p>
                             <div class="mb-2">
-                                @if($user->is_verified)
+                                        @if($user->is_verified)
                                     <span class="badge badge-success"><i class="fas fa-check"></i> Email Verified</span>
-                                @else
+                                        @else
                                     <span class="badge badge-warning">Email Pending</span>
                                     <button type="button" class="btn btn-sm btn-success ml-1 verify-email-btn" data-url="{{ route('admin.users.verify-email', $user->id) }}">
                                         Verify Email
-                                    </button>
-                                @endif
+                                                    </button>
+                                                @endif
 
                                 @if($user->phone_verified)
                                     <span class="badge badge-info"><i class="fas fa-phone"></i> Phone Verified</span>
-                                @else
+                                            @else
                                     <span class="badge badge-secondary">Phone Pending</span>
                                     @if($user->phone)
                                     <button type="button" class="btn btn-sm btn-info ml-1 verify-phone-btn" data-url="{{ route('admin.users.verify-phone', $user->id) }}">
                                         Verify Phone
                                     </button>
-                                    @endif
-                                @endif
+                                            @endif
+                                            @endif
 
                                 @if($user->profile_completed)
                                     <span class="badge badge-primary">Profile Complete</span>
-                                @endif
-                            </div>
+                                                @endif
+                                            </div>
                             <small class="text-muted">Registered: {{ $user->created_at?->format('d M Y, h:i A') }}</small>
-                        </div>
+                                        </div>
                         <div class="col-md-3 text-right">
                             <button type="button" class="btn btn-{{ $user->status === 'active' ? 'warning' : 'success' }} toggle-status-btn"
                                 data-url="{{ route('admin.users.toggle-status', $user->id) }}">
                                 {{ $user->status === 'active' ? 'Deactivate Account' : 'Activate Account' }}
                             </button>
-                        </div>
-                    </div>
+                                        </div>
+                                    </div>
 
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#personal">Personal</a></li>
@@ -86,11 +86,11 @@
                                 <tr><th>Interests</th><td colspan="3">
                                     @foreach($user->interests as $interest)
                                         <span class="badge badge-primary">{{ $interest }}</span>
-                                    @endforeach
+                                                                @endforeach
                                 </td></tr>
                                 @endif
                             </table>
-                        </div>
+                                                            </div>
 
                         <div class="tab-pane fade" id="education">
                             <table class="table table-bordered">
@@ -99,7 +99,7 @@
                                 <tr><th>Employment Type</th><td>{{ ucfirst(str_replace('_', ' ', $user->employment_type ?? '-')) }}</td><th>Job Title</th><td>{{ $user->job_title ?? '-' }}</td></tr>
                                 <tr><th>Company</th><td>{{ $user->company ?? '-' }}</td><th>Monthly Income</th><td>{{ $user->monthly_income ?? '-' }}</td></tr>
                             </table>
-                        </div>
+                                                        </div>
 
                         <div class="tab-pane fade" id="faith">
                             <table class="table table-bordered">
@@ -123,7 +123,7 @@
                                     <img src="{{ asset('storage/' . ($photo['path'] ?? '')) }}" class="img-fluid rounded border mb-1" alt="Photo">
                                     @if($photo['is_main'] ?? false)
                                         <span class="badge badge-success">Main Photo</span>
-                                    @endif
+                                                    @endif
                                 </div>
                                 @endforeach
                             </div>

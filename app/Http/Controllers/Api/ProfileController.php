@@ -217,7 +217,7 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => $message,
-            'user' => UserResource::make($user->fresh()),
+            'user' => UserResource::toPayload($user->fresh()),
         ]);
     }
 }

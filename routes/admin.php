@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 $adminPrefix = config('custom.admin_login_prefix', 'admin');
 
-Route::prefix($adminPrefix)->name('admin.')->group(function () {
+    Route::prefix($adminPrefix)->name('admin.')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('store-login', [AuthenticatedSessionController::class, 'store'])->name('store-login');
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
@@ -33,5 +33,13 @@ Route::prefix($adminPrefix)->name('admin.')->group(function () {
             Route::put('profile-update', 'profile_update')->name('profile-update');
             Route::put('update-password', 'update_password')->name('update-password');
         });
+
+        // Subscriptions
+        Route::resource('subscriptions', \App\Http\Controllers\Admin\SubscriptionController::class);
+        
+        // Settings
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+
     });
 });

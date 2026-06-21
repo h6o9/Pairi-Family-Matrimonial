@@ -21,6 +21,7 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20',
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
             'terms_accepted' => 'required|accepted',
+            'referral_code' => 'nullable|string|exists:users,referral_code',
         ]);
 
         $otp = $this->generateOtp(4);
@@ -38,12 +39,27 @@ class AuthController extends Controller
             'status' => 'active',
         ]);
 
+        if ($request->filled('referral_code')) {
+            $referrer = User::where('referral_code', $request->referral_code)->first();
+            if ($referrer) {
+                $points = \App\Models\SystemSetting::getVal('invite_reward_points', 50);
+                
+                \App\Models\Referral::create([
+                    'referrer_id' => $referrer->id,
+                    'referred_user_id' => $user->id,
+                    'points_earned' => $points,
+                ]);
+
+                $referrer->increment('reward_points', $points);
+            }
+        }
+
         $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
 
         return response()->json([
             'success' => true,
             'message' => 'Account created. We sent a 4-digit code to your email.',
-            'user' => UserResource::make($user),
+            'user' => UserResource::toPayload($user),
             'resend_after_seconds' => config('pairi_family.otp_resend_seconds', 45),
         ], 201);
     }
@@ -61,7 +77,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Email already verified.',
-                'user' => UserResource::make($user),
+                'user' => UserResource::toPayload($user),
                 'token' => $user->createToken('auth')->plainTextToken,
             ]);
         }
@@ -81,7 +97,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Email verified successfully.',
-            'user' => UserResource::make($user->fresh()),
+            'user' => UserResource::toPayload($user->fresh()),
             'token' => $user->createToken('auth')->plainTextToken,
         ]);
     }
@@ -151,7 +167,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Logged in successfully.',
-            'user' => UserResource::make($user),
+            'user' => UserResource::toPayload($user),
             'token' => $user->createToken('auth')->plainTextToken,
         ]);
     }
@@ -370,7 +386,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Number verified! Your profile has been verified successfully.',
-            'user' => UserResource::make($user->fresh()),
+            'user' => UserResource::toPayload($user->fresh()),
         ]);
     }
 
@@ -378,7 +394,7 @@ class AuthController extends Controller
     {
         return response()->json([
             'success' => true,
-            'user' => UserResource::make($request->user()),
+            'user' => UserResource::toPayload($request->user()),
         ]);
     }
 

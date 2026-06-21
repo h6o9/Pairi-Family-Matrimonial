@@ -32,6 +32,13 @@ class LookupController extends Controller
                 'mother_tongues' => config('pairi_family.mother_tongues'),
                 'languages' => config('pairi_family.languages'),
                 'genders' => config('pairi_family.genders'),
+                'professions' => config('pairi_family.professions'),
+                'filter_cities' => config('pairi_family.filter_cities'),
+                'quick_filters' => [
+                    ['key' => 'near_me', 'label' => 'Near Me'],
+                    ['key' => 'new_profiles', 'label' => 'New Profiles'],
+                    ['key' => 'verified', 'label' => 'Verified'],
+                ],
             ],
         ]);
     }

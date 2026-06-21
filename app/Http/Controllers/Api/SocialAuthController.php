@@ -74,7 +74,7 @@ class SocialAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Logged in successfully.',
-            'user' => UserResource::make($user->fresh()),
+            'user' => UserResource::toPayload($user->fresh()),
             'token' => $user->createToken('auth')->plainTextToken,
         ]);
     }

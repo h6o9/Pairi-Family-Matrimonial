@@ -63,6 +63,7 @@
                                 <th>Email / Phone</th>
                                 <th>Verified</th>
                                 <th>Profile</th>
+                                <th>Points</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -98,6 +99,9 @@
                                     <span class="badge badge-{{ $user->profile_completed ? 'success' : 'secondary' }}">
                                         {{ $user->profile_completed ? 'Complete' : 'Step ' . $user->profile_step . '/8' }}
                                     </span>
+                                </td>
+                                <td>
+                                    <strong>{{ $user->reward_points }}</strong>
                                 </td>
                                 <td>
                                     <span class="badge badge-{{ $user->status === 'active' ? 'success' : 'danger' }}">

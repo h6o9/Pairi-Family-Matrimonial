@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -42,6 +44,8 @@ class User extends Authenticatable
         'other_languages' => 'array',
         'interests' => 'array',
         'photos' => 'array',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function getAgeAttribute(): ?int
@@ -60,5 +64,45 @@ class User extends Authenticatable
         $main = collect($photos)->firstWhere('is_main', true) ?? $photos[0];
 
         return isset($main['path']) ? asset('storage/' . $main['path']) : null;
+    }
+
+    public function sentInterests(): HasMany
+    {
+        return $this->hasMany(ProfileInterest::class, 'from_user_id');
+    }
+
+    public function receivedInterests(): HasMany
+    {
+        return $this->hasMany(ProfileInterest::class, 'to_user_id');
+    }
+
+    public function interactedUserIds(): Collection
+    {
+        return ProfileInterest::query()
+            ->where('from_user_id', $this->id)
+            ->pluck('to_user_id');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->referral_code)) {
+                $user->referral_code = self::generateUniqueReferralCode();
+            }
+        });
+    }
+
+    public static function generateUniqueReferralCode(): string
+    {
+        do {
+            $code = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        } while (self::where('referral_code', $code)->exists());
+
+        return $code;
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
     }
 }
