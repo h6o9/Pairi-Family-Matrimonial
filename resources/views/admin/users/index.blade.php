@@ -1,6 +1,6 @@
 @extends('admin.master_layout')
 @section('title')
-    <title>Users - Pairi Family</title>
+    <title>Users - Piyari Family</title>
 @endsection
 @section('admin-content')
 <div class="main-content">

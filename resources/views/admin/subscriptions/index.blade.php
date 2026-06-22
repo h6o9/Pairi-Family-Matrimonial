@@ -1,6 +1,6 @@
 @extends('admin.master_layout')
 @section('title')
-    <title>Subscriptions - Pairi Family</title>
+    <title>Subscriptions - Piyari Family</title>
 @endsection
 @section('admin-content')
 <div class="main-content">

@@ -36,6 +36,14 @@ $adminPrefix = config('custom.admin_login_prefix', 'admin');
 
         // Subscriptions
         Route::resource('subscriptions', \App\Http\Controllers\Admin\SubscriptionController::class);
+
+        // Marriage Bureau Management
+        Route::resource('marriage-bureaus', \App\Http\Controllers\Admin\MarriageBureauController::class);
+        Route::post('marriage-bureaus/{marriage_bureau}/verify-subscription', [\App\Http\Controllers\Admin\MarriageBureauController::class, 'verifySubscription'])->name('marriage-bureaus.verify-subscription');
+        Route::resource('marriage-bureau-subscriptions', \App\Http\Controllers\Admin\MarriageBureauSubscriptionPlanController::class);
+        
+        // Normal User Subscription Verification
+        Route::post('users/{user}/verify-subscription', [UserController::class, 'verifySubscription'])->name('users.verify-subscription');
         
         // Settings
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');

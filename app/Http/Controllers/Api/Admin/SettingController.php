@@ -10,25 +10,43 @@ class SettingController extends Controller
 {
     public function index()
     {
-        return response()->json([
-            'success' => true,
-            'settings' => SystemSetting::all()->pluck('value', 'key'),
-        ]);
+        try {
+            return response()->json([
+                'success' => true,
+                'settings' => SystemSetting::all()->pluck('value', 'key'),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch settings',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     public function update(Request $request)
     {
-        $data = $request->validate([
-            'settings' => 'required|array',
-        ]);
+        try {
+            $data = $request->validate([
+                'settings' => 'required|array',
+            ]);
 
-        foreach ($data['settings'] as $key => $value) {
-            SystemSetting::setVal($key, $value);
+            foreach ($data['settings'] as $key => $value) {
+                SystemSetting::setVal($key, $value);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings updated successfully',
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update settings',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Settings updated successfully',
-        ]);
     }
 }

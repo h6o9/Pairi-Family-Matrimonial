@@ -75,7 +75,7 @@
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
             <a href="{{ route('admin.dashboard') }}">
-                <span class="brand-text">Pairi Family</span>
+                <span class="brand-text">Piyari Family</span>
             </a>
         </div>
 
@@ -101,6 +101,20 @@
                 <a href="{{ route('admin.subscriptions.index') }}">
                     <i class="fas fa-gem"></i>
                     <span>{{ __('Subscriptions') }}</span>
+                </a>
+            </li>
+
+            <li class="menu-header">{{ __('Marriage Bureau Panel') }}</li>
+            <li class="{{ request()->routeIs('admin.marriage-bureaus.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.marriage-bureaus.index') }}">
+                    <i class="fas fa-building"></i>
+                    <span>{{ __('Marriage Bureaus') }}</span>
+                </a>
+            </li>
+            <li class="{{ request()->routeIs('admin.marriage-bureau-subscriptions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.marriage-bureau-subscriptions.index') }}">
+                    <i class="fas fa-certificate"></i>
+                    <span>{{ __('MB Subscriptions') }}</span>
                 </a>
             </li>
             

@@ -1,6 +1,6 @@
 @extends('admin.master_layout')
 @section('title')
-    <title>System Settings - Pairi Family</title>
+    <title>System Settings - Piyari Family</title>
 @endsection
 @section('admin-content')
 <div class="main-content">

@@ -30,6 +30,10 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
+
+            Route::middleware('web')
+                ->prefix('marriage-bureau')
+                ->group(base_path('routes/marriage_bureau.php'));
         });
     }
 }

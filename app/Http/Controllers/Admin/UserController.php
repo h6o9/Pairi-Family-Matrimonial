@@ -99,4 +99,32 @@ class UserController extends Controller
             'status' => $user->status,
         ]);
     }
+    public function verifySubscription(Request $request, User $user)
+    {
+        $request->validate([
+            'user_subscription_id' => 'required|exists:user_subscriptions,id',
+            'payment_screenshot' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $subscription = \App\Models\UserSubscription::where('user_id', $user->id)
+            ->where('id', $request->user_subscription_id)
+            ->firstOrFail();
+
+        if ($request->hasFile('payment_screenshot')) {
+            $path = $request->file('payment_screenshot')->store('payment_screenshots', 'public');
+            $subscription->payment_screenshot = $path;
+            $subscription->status = 'verified';
+            $subscription->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Subscription payment verified successfully.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Payment screenshot is required.',
+        ]);
+    }
 }

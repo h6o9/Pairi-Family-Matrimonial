@@ -10,11 +10,19 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $subscriptions = Subscription::where('status', 'active')->get();
+        try {
+            $subscriptions = Subscription::where('status', 'active')->get();
 
-        return response()->json([
-            'success' => true,
-            'subscriptions' => $subscriptions,
-        ]);
+            return response()->json([
+                'success' => true,
+                'subscriptions' => $subscriptions,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch subscriptions',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 }

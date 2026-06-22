@@ -1,12 +1,12 @@
 @extends('admin.master_layout')
 @section('title')
-    <title>Dashboard - Pairi Family</title>
+    <title>Dashboard - Piyari Family</title>
 @endsection
 @section('admin-content')
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Pairi Family Dashboard</h1>
+            <h1>Piyari Family Dashboard</h1>
         </div>
         <div class="section-body">
             <div class="row">

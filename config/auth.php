@@ -36,6 +36,11 @@ return [
             'provider' => 'staff',
         ],
 
+        'marriage_bureau' => [
+            'driver' => 'session',
+            'provider' => 'marriage_bureaus',
+        ],
+
     ],
 
     /*
@@ -59,6 +64,11 @@ return [
         'staff' => [
             'driver' => 'eloquent',
             'model' => App\Models\Staff::class,
+        ],
+
+        'marriage_bureaus' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\MarriageBureau::class,
         ],
 
     ],
@@ -87,6 +97,13 @@ return [
 
         'staff' => [
             'provider' => 'staff',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'marriage_bureaus' => [
+            'provider' => 'marriage_bureaus',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,

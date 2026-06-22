@@ -1,6 +1,6 @@
 @extends('admin.master_layout')
 @section('title')
-    <title>{{ $user->name }} - Pairi Family</title>
+    <title>{{ $user->name }} - Piyari Family</title>
 @endsection
 @section('admin-content')
 <div class="main-content">
@@ -70,6 +70,7 @@
                         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#education">Education & Career</a></li>
                         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#faith">Faith & Physical</a></li>
                         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#photos">Photos</a></li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#subscriptions">Subscriptions</a></li>
                     </ul>
 
                     <div class="tab-content pt-3">
@@ -131,13 +132,97 @@
                                 <p class="text-muted">No photos uploaded yet.</p>
                             @endif
                         </div>
+
+                        <div class="tab-pane fade" id="subscriptions">
+                            @php
+                                $userSubscriptions = \App\Models\UserSubscription::where('user_id', $user->id)
+                                    ->join('subscriptions', 'subscriptions.id', '=', 'user_subscriptions.subscription_id')
+                                    ->select('user_subscriptions.*', 'subscriptions.name as plan_name', 'subscriptions.price as plan_price')
+                                    ->get();
+                            @endphp
+                            
+                            @if($userSubscriptions->count() > 0)
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Plan Name</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                            <th>Purchased On</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($userSubscriptions as $sub)
+                                        <tr>
+                                            <td>{{ $sub->plan_name }}</td>
+                                            <td>${{ number_format($sub->plan_price, 2) }}</td>
+                                            <td>
+                                                @if($sub->status == 'verified' || $sub->status == 'free')
+                                                    <span class="badge badge-success">{{ ucfirst($sub->status) }}</span>
+                                                @elseif($sub->status == 'paid')
+                                                    <span class="badge badge-warning">Paid (Pending Verification)</span>
+                                                @else
+                                                    <span class="badge badge-secondary">{{ ucfirst($sub->status) }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $sub->created_at->format('d M Y') }}</td>
+                                            <td>
+                                                @if($sub->status == 'paid')
+                                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#verifySubscriptionModal" data-sub-id="{{ $sub->id }}">
+                                                        Verify Payment
+                                                    </button>
+                                                @endif
+                                                @if($sub->payment_screenshot)
+                                                    <a href="{{ asset('storage/' . $sub->payment_screenshot) }}" target="_blank" class="btn btn-sm btn-info">View Screenshot</a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @else
+                                <p class="text-muted">User has no subscriptions.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 </div>
+</div>
 @endsection
+
+@push('modals')
+<!-- Verify Subscription Modal -->
+<div class="modal fade" id="verifySubscriptionModal" tabindex="-1" role="dialog" aria-labelledby="verifySubscriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form id="verifySubscriptionForm" action="{{ route('admin.users.verify-subscription', $user->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="user_subscription_id" id="verify_sub_id">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verifySubscriptionModalLabel">Verify Subscription Payment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="payment_screenshot">Upload Payment Screenshot <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" name="payment_screenshot" id="payment_screenshot" accept="image/*" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Verify Payment</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endpush
 
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -169,6 +254,44 @@ $(document).on('click', '.verify-phone-btn', function() {
 
 $(document).on('click', '.toggle-status-btn', function() {
     postAction($(this).data('url'), $(this));
+});
+
+$('#verifySubscriptionModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var subId = button.data('sub-id');
+    var modal = $(this);
+    modal.find('#verify_sub_id').val(subId);
+});
+
+$('#verifySubscriptionForm').on('submit', function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var btn = form.find('button[type="submit"]');
+    var original = btn.html();
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+    var formData = new FormData(this);
+
+    $.ajax({
+        url: form.attr('action'),
+        type: 'POST',
+        data: formData,
+        success: function (res) {
+            if (res.success) {
+                Swal.fire('Success', res.message, 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Error', res.message, 'error');
+                btn.prop('disabled', false).html(original);
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Something went wrong.', 'error');
+            btn.prop('disabled', false).html(original);
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+    });
 });
 </script>
 @endpush
