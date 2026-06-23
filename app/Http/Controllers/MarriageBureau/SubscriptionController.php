@@ -58,4 +58,30 @@ class SubscriptionController extends Controller
 
         return redirect()->route('marriage-bureau.dashboard')->with(['message' => 'Free subscription activated successfully.', 'alert-type' => 'success']);
     }
+
+    public function uploadScreenshot(Request $request)
+    {
+        $request->validate([
+            'payment_screenshot' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $bureauId = Auth::guard('marriage_bureau')->id();
+        $sub = MarriageBureauSubscription::where('marriage_bureau_id', $bureauId)->latest()->first();
+
+        if (!$sub || $sub->status !== 'paid') {
+            return back()->with(['message' => 'No pending subscription found.', 'alert-type' => 'error']);
+        }
+
+        if ($request->hasFile('payment_screenshot')) {
+            $image = $request->file('payment_screenshot');
+            $imageName = time().'_'.$image->getClientOriginalName();
+            $image->move(public_path('uploads/screenshots'), $imageName);
+            $sub->payment_screenshot = 'uploads/screenshots/'.$imageName;
+            $sub->save();
+
+            return back()->with(['message' => 'Screenshot uploaded successfully. Please wait for admin verification.', 'alert-type' => 'success']);
+        }
+
+        return back()->with(['message' => 'Failed to upload screenshot.', 'alert-type' => 'error']);
+    }
 }

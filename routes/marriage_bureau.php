@@ -18,6 +18,7 @@ Route::name('marriage-bureau.')->group(function () {
     Route::middleware('auth:marriage_bureau')->group(function () {
         Route::get('subscription', [\App\Http\Controllers\MarriageBureau\SubscriptionController::class, 'index'])->name('subscription.index');
         Route::post('subscription', [\App\Http\Controllers\MarriageBureau\SubscriptionController::class, 'store'])->name('subscription.store');
+        Route::post('subscription/upload-screenshot', [\App\Http\Controllers\MarriageBureau\SubscriptionController::class, 'uploadScreenshot'])->name('subscription.upload-screenshot');
 
         Route::middleware([\App\Http\Middleware\RequireMBSuspcription::class])->group(function() {
             Route::get('dashboard', function () {
