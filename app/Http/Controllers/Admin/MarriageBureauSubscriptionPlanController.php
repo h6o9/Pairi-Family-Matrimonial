@@ -29,6 +29,7 @@ class MarriageBureauSubscriptionPlanController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'payment_status' => 'required|in:free,paid',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -49,6 +50,7 @@ class MarriageBureauSubscriptionPlanController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'payment_status' => 'required|in:free,paid',
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);

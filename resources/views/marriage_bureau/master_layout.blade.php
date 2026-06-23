@@ -18,7 +18,7 @@
     <style>
         /* Piyari Family Premium Theme */
         :root {
-            --primary: #7B1113; /* Burgundy */
+            --primary: #6E0016; /* Deep Red */
             --primary-hover: #5a0c0e;
             --secondary: #F5A623; /* Gold */
             --bg-color: #FFF5F5; /* Soft Pink/Cream */
@@ -79,8 +79,16 @@
                 <div class="me-2 form-inline">
                     <ul class="navbar-nav d-flex align-items-center">
                         <li><a class="nav-link nav-link-lg" data-toggle="sidebar" href="javascript:void(0)"><i class="fas fa-bars"></i></a></li>
-                        <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="Piyari Family Logo" class="logo-img me-2" onerror="this.src='https://via.placeholder.com/150x40/7B1113/FFFFFF?text=Piyari+Family'">
-                        <p style="margin: 0; padding: 0; color: #ffffff; font-size: 20px; font-weight: bold;">Marriage Bureau Panel</p>
+
+                        <p style="margin: 0; padding: 0; color: #ffffff; font-size: 20px; font-weight: bold;">
+                            @if(Auth::guard('admin')->check())
+                                Admin Panel
+                            @elseif(Auth::guard('marriage_bureau')->check())
+                                Marriage Bureau Panel
+                            @else
+                                Panel
+                            @endif
+                        </p>
                     </ul>
                 </div>
                 <div class="mr-auto me-md-auto search-box position-relative">

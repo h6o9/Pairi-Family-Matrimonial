@@ -1,4 +1,5 @@
 <script src="{{ asset('global/js/jquery-3.7.1.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.2.0/turbolinks.js"></script>
 <script src="{{ asset('backend/js/popper.min.js') }}"></script>
 <script src="{{ asset('backend/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('backend/js/jquery.nicescroll.min.js') }}"></script>

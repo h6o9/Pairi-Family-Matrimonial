@@ -24,6 +24,8 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 if ($guard == 'admin') {
                     return redirect(RouteServiceProvider::ADMIN);
+                } elseif ($guard == 'marriage_bureau') {
+                    return redirect()->route('marriage-bureau.dashboard');
                 } else {
                     $user = Auth::guard('web')->user();
 

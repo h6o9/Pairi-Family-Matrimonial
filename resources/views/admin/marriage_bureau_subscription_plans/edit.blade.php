@@ -26,7 +26,13 @@
                                 <input type="number" class="form-control" name="price" value="{{ $marriage_bureau_subscription->price }}" required min="0">
                             </div>
                         </div>
-
+                        <div class="form-group">
+                            <label>Payment Status</label>
+                            <select class="form-control" name="payment_status" required>
+                                <option value="free" {{ $marriage_bureau_subscription->payment_status == 'free' ? 'selected' : '' }}>Free</option>
+                                <option value="paid" {{ $marriage_bureau_subscription->payment_status == 'paid' ? 'selected' : '' }}>Paid</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label>Description</label>
                             <textarea class="form-control" name="description" rows="4">{{ $marriage_bureau_subscription->description }}</textarea>

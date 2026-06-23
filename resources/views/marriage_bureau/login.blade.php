@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ asset('backend/css/components.css') }}">
     <style>
         :root {
-            --primary: #7B1113;
+            --primary: #6E0016;
             --secondary: #F5A623;
         }
         .btn-primary {

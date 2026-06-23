@@ -18,15 +18,31 @@
                             <h2>Welcome, {{ Auth::guard('marriage_bureau')->user()->name }}!</h2>
                             <p class="lead">Manage your bureau, upgrade your subscription, and help people find their matches in heaven.</p>
                             @php
-                                $activeSub = \App\Models\MarriageBureauSubscription::where('marriage_bureau_id', Auth::guard('marriage_bureau')->id())->where('status', 'verified')->first();
+                                $sub = \App\Models\MarriageBureauSubscription::with('plan')->where('marriage_bureau_id', Auth::guard('marriage_bureau')->id())->latest()->first();
+                                $hasAccess = $sub && in_array($sub->status, ['verified', 'free']);
                             @endphp
-                            @if($activeSub)
+
+                            @if($sub && $sub->status == 'paid')
                                 <div class="mt-4">
-                                    <a href="#" class="btn btn-outline-white btn-lg btn-icon icon-left"><i class="fas fa-users"></i> Manage Users</a>
+                                    <div class="alert alert-warning">
+                                        Your subscription plan ({{ $sub->plan->name ?? '' }}) requires payment verification. 
+                                        @if($sub->payment_screenshot)
+                                            You have already uploaded the screenshot. Please wait for the admin to verify it.
+                                        @else
+                                            Please click the button below to upload your payment screenshot.
+                                        @endif
+                                    </div>
+                                    @if(!$sub->payment_screenshot)
+                                        <button class="btn btn-warning btn-lg btn-icon icon-left" data-toggle="modal" data-target="#verifyModal"><i class="fas fa-file-upload"></i> Verify Subscription</button>
+                                    @endif
+                                </div>
+                            @elseif($hasAccess)
+                                <div class="mt-4">
+                                    <a href="{{ route('marriage-bureau.users.index') }}" class="btn btn-outline-white btn-lg btn-icon icon-left"><i class="fas fa-users"></i> Manage Users</a>
                                 </div>
                             @else
                                 <div class="mt-4">
-                                    <a href="#" class="btn btn-warning btn-lg btn-icon icon-left"><i class="fas fa-crown"></i> Get Premium Plan</a>
+                                    <a href="{{ route('marriage-bureau.subscription.index') }}" class="btn btn-warning btn-lg btn-icon icon-left"><i class="fas fa-crown"></i> Get Premium Plan</a>
                                 </div>
                             @endif
                         </div>
@@ -34,6 +50,7 @@
                 </div>
             </div>
             
+            @if($hasAccess)
             <div class="row">
                 <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
@@ -45,7 +62,7 @@
                                 <h4>Total Users</h4>
                             </div>
                             <div class="card-body">
-                                0
+                                {{ \App\Models\User::where('marriage_bureau_id', Auth::guard('marriage_bureau')->id())->count() }}
                             </div>
                         </div>
                     </div>
@@ -60,12 +77,44 @@
                                 <h4>Subscription</h4>
                             </div>
                             <div class="card-body">
-                                {{ $activeSub ? 'Active' : 'None' }}
+                                Active ({{ ucfirst($sub->status) }})
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            @endif
+        </div>
+    </section>
+</div>
+
+<!-- Verify Modal -->
+<div class="modal fade" id="verifyModal" tabindex="-1" role="dialog" aria-labelledby="verifyModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="verifyModalLabel">Verify Subscription Payment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ route('marriage-bureau.subscription.upload-screenshot') }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <div class="modal-body">
+            <div class="form-group">
+                <label>Payment Screenshot</label>
+                <input type="file" class="form-control" name="payment_screenshot" required accept="image/*">
+                <small class="form-text text-muted">Upload a screenshot of your payment receipt.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Upload & Verify</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
         </div>
     </section>
 </div>

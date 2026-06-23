@@ -106,7 +106,7 @@ class AuthenticatedSessionController extends Controller
     protected function attemptLogin($credential, $request)
     {
         if (Auth::guard('web')->attempt($credential, $request->remember)) {
-            $notification = __('Logged in successfully.');
+            $notification = __('Login successfully.');
             $notification = ['message' => $notification, 'alert-type' => 'success'];
 
             $redirect = auth()->user()?->seller ? 'seller.dashboard' : 'website.user.dashboard';
@@ -142,7 +142,7 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $notification = __('Logged out successfully.');
+        $notification = __('Logout successfully.');
         $notification = ['message' => $notification, 'alert-type' => 'success'];
 
         return redirect()->route('login')->with($notification);

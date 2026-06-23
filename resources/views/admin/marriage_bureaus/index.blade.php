@@ -23,6 +23,7 @@
                                     <th>Email</th>
                                     <th>Status</th>
                                     <th>Joined At</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -39,6 +40,9 @@
                                         @endif
                                     </td>
                                     <td>{{ $bureau->created_at->format('d M, Y') }}</td>
+                                    <td>
+                                        <a href="{{ route('admin.marriage-bureaus.show', $bureau->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>
+                                    </td>
                                 </tr>
                                 @empty
                                 <tr>

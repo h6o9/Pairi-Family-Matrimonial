@@ -25,7 +25,13 @@
                                 <input type="number" class="form-control" name="price" required min="0">
                             </div>
                         </div>
-
+                        <div class="form-group">
+                            <label>Payment Status</label>
+                            <select class="form-control" name="payment_status" required>
+                                <option value="free">Free</option>
+                                <option value="paid" selected>Paid</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label>Description</label>
                             <textarea class="form-control" name="description" rows="4"></textarea>

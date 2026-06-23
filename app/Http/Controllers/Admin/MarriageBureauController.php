@@ -37,7 +37,18 @@ class MarriageBureauController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $bureau = \App\Models\MarriageBureau::findOrFail($id);
+        return view('admin.marriage_bureaus.show', compact('bureau'));
+    }
+
+    public function verifySubscription(string $id)
+    {
+        $subscription = \App\Models\MarriageBureauSubscription::findOrFail($id);
+        $subscription->status = 'verified';
+        $subscription->save();
+
+        $notification = ['message' => 'Subscription verified successfully.', 'alert-type' => 'success'];
+        return redirect()->back()->with($notification);
     }
 
     /**
