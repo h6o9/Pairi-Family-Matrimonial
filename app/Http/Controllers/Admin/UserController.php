@@ -112,8 +112,11 @@ class UserController extends Controller
 
         if ($request->hasFile('payment_screenshot')) {
             $path = $request->file('payment_screenshot')->store('payment_screenshots', 'public');
+            $subscription->load('plan');
             $subscription->payment_screenshot = $path;
             $subscription->status = 'verified';
+            $subscription->starts_at = now();
+            $subscription->expires_at = now()->addDays($subscription->plan->duration_days ?? 30);
             $subscription->save();
 
             return response()->json([

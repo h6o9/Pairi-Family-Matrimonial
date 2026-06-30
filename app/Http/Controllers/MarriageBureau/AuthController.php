@@ -24,7 +24,8 @@ class AuthController extends Controller
 
         if (Auth::guard('marriage_bureau')->attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('marriage-bureau.dashboard');
+
+            return redirect()->intended($this->postLoginRedirect());
         }
 
         return back()->withErrors([
@@ -55,7 +56,19 @@ class AuthController extends Controller
 
         Auth::guard('marriage_bureau')->login($bureau);
 
-        return redirect()->route('marriage-bureau.dashboard');
+        return redirect()->route('marriage-bureau.subscription.index');
+    }
+
+    private function postLoginRedirect(): string
+    {
+        $bureauId = Auth::guard('marriage_bureau')->id();
+        $hasAccess = \App\Models\MarriageBureauSubscription::where('marriage_bureau_id', $bureauId)
+            ->whereIn('status', ['verified', 'free'])
+            ->exists();
+
+        return $hasAccess
+            ? route('marriage-bureau.dashboard')
+            : route('marriage-bureau.subscription.index');
     }
 
     public function logout(Request $request)

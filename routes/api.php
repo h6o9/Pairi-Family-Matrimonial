@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LookupController;
 use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReferralController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\ShortlistController;
 use App\Http\Controllers\Api\SocialAuthController;
 use Illuminate\Http\Request;
@@ -105,8 +107,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Subscriptions and Referrals
     Route::get('/subscriptions', [\App\Http\Controllers\Api\SubscriptionController::class, 'index']);
-    Route::get('/referrals/stats', [\App\Http\Controllers\Api\ReferralController::class, 'stats']);
-    Route::get('/referrals/history', [\App\Http\Controllers\Api\ReferralController::class, 'history']);
+    Route::get('/subscriptions/my-plan', [\App\Http\Controllers\Api\SubscriptionController::class, 'myPlan']);
+    Route::post('/subscriptions/subscribe', [\App\Http\Controllers\Api\SubscriptionController::class, 'subscribe']);
+    Route::post('/subscriptions/upload-payment', [\App\Http\Controllers\Api\SubscriptionController::class, 'uploadPayment']);
+    Route::post('/subscriptions/cancel', [\App\Http\Controllers\Api\SubscriptionController::class, 'cancel']);
+    Route::get('/referrals/stats', [ReferralController::class, 'stats']);
+    Route::get('/referrals/history', [ReferralController::class, 'history']);
+    Route::get('/referrals/rewards', [ReferralController::class, 'rewards']);
+    Route::post('/referrals/redeem', [ReferralController::class, 'redeem']);
+
+    // Settings & Account
+    Route::get('/settings', [SettingsController::class, 'index']);
+    Route::post('/settings/visibility', [SettingsController::class, 'updateVisibility']);
+    Route::post('/account/deactivate', [SettingsController::class, 'deactivate']);
+    Route::post('/account/delete', [SettingsController::class, 'deleteAccount']);
+    Route::get('/notifications', [SettingsController::class, 'notifications']);
 
     // Admin Routes
     Route::prefix('admin')->group(function () {

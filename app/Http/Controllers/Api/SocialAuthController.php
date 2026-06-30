@@ -17,12 +17,6 @@ class SocialAuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'provider' => 'required|in:google,apple',
-                'token' => 'required|string',
-                'name' => 'nullable|string|max:255',
-                'email' => 'nullable|email',
-            ]);
 
             try {
                 $socialUser = Socialite::driver($request->provider)->stateless()->userFromToken($request->token);

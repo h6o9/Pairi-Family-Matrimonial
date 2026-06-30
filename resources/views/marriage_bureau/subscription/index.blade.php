@@ -90,7 +90,7 @@
         color: white;
     }
 </style>
-@endsection
+@endpush
 
 @section('admin-content')
 <div class="main-content">

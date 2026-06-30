@@ -63,6 +63,11 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'location' => trim(implode(', ', array_filter([$this->city, $this->country]))),
             'profession' => $this->job_title,
+            'referral_code' => $this->referral_code,
+            'reward_points' => (int) ($this->reward_points ?? 0),
+            'profile_photo_visible' => (bool) ($this->profile_photo_visible ?? true),
+            'additional_photos_visible' => (bool) ($this->additional_photos_visible ?? true),
+            'profile_boost_until' => $this->profile_boost_until?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

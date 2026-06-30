@@ -7,77 +7,81 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
-    {
 
-        try {
-			$request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',  // ✅ یہ چیک کرے گا
-            'phone' => 'required|string|max:20',
-              'password' => 'required|string|min:8',
-            'referral_code' => 'nullable|string|exists:users,referral_code',
+public function register(Request $request): JsonResponse
+{
+    try {
+
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
         ]);
-            $otp = $this->generateOtp(4);
-            $resendAt = now()->addSeconds(config('pairi_family.otp_resend_seconds', 45));
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => $request->password,
-                'otp' => $otp,
-                'email_otp_expires_at' => now()->addMinutes(10),
-                'otp_resend_available_at' => $resendAt,
-                'terms_accepted_at' => now(),
-                'status' => 'active',
-            ]);
+        $otp = $this->generateOtp(6);
+        $resendAt = now()->addSeconds(config('pairi_family.otp_resend_seconds', 45));
 
-            if ($request->filled('referral_code')) {
-                $referrer = User::where('referral_code', $request->referral_code)->first();
-                if ($referrer) {
-                    $points = \App\Models\SystemSetting::getVal('invite_reward_points', 50);
-                    
-                    \App\Models\Referral::create([
-                        'referrer_id' => $referrer->id,
-                        'referred_user_id' => $user->id,
-                        'points_earned' => $points,
-                    ]);
-
-                    $referrer->increment('reward_points', $points);
-                }
+        $referrerId = null;
+        if ($request->filled('referral_code')) {
+            $referrer = User::where('referral_code', $request->referral_code)->first();
+            if ($referrer) {
+                $referrerId = $referrer->id;
             }
-
-            $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Account created successfully. We sent a 4-digit code to your email.',
-                'user' => UserResource::toPayload($user),
-                'resend_after_seconds' => config('pairi_family.otp_resend_seconds', 45),
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed.',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
         }
-    }
 
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => $request->password,
+            'otp' => $otp,
+            'email_otp_expires_at' => now()->addMinutes(10),
+            'otp_resend_available_at' => $resendAt,
+            'terms_accepted_at' => now(),
+            'status' => 'active',
+            'referred_by' => $referrerId,
+        ]);
+
+        $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Account created successfully. We sent a 6-digit code to your email.',
+            'user' => UserResource::toPayload($user),
+            'resend_after_seconds' => config('pairi_family.otp_resend_seconds', 45),
+        ], 201);
+
+    } catch (ValidationException $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->validator->errors()->first(),
+        ], 422);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Registration failed.',
+            'error' => config('app.debug') ? $e->getMessage() : null,
+        ], 500);
+    }
+}
     public function verifyEmailOtp(Request $request): JsonResponse
     {
         try {
             $request->validate([
                 'email' => 'required|email|exists:users,email',
-                'otp' => 'required|string|size:4',
             ]);
 
             $user = User::where('email', $request->email)->first();
@@ -103,6 +107,8 @@ class AuthController extends Controller
                 'otp_resend_available_at' => null,
             ]);
 
+            $this->processReferralReward($user);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Email verified successfully.',
@@ -120,59 +126,104 @@ class AuthController extends Controller
         }
     }
 
-    public function resendEmailOtp(Request $request): JsonResponse
-    {
-        try {
-            $request->validate(['email' => 'required|email|exists:users,email']);
+   public function resendEmailOtp(Request $request): JsonResponse
+{
+    try {
+        Log::info('Resend OTP request received.', [
+            'email' => $request->email
+        ]);
 
-            $user = User::where('email', $request->email)->first();
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ]);
 
-            if ($user->is_verified) {
-                return response()->json(['success' => false, 'message' => 'Email is already verified.'], 400);
-            }
+        $user = User::where('email', $request->email)->first();
 
-            if ($user->otp_resend_available_at && $user->otp_resend_available_at->isFuture()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Please wait before requesting a new code.',
-                    'resend_after_seconds' => now()->diffInSeconds($user->otp_resend_available_at),
-                ], 429);
-            }
+        Log::info('User found.', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'is_verified' => $user->is_verified
+        ]);
 
-            $otp = $this->generateOtp(4);
-            $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
-
-            $user->update([
-                'otp' => $otp,
-                'email_otp_expires_at' => now()->addMinutes(10),
-                'otp_resend_available_at' => now()->addSeconds($resendSeconds),
-            ]);
-
-            $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'OTP resent to your email.',
-                'resend_after_seconds' => $resendSeconds,
-            ], 200);
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
+        if ($user->is_verified) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to resend OTP.',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+                'message' => 'Email is already verified.'
+            ], 400);
         }
+
+        if ($user->otp_resend_available_at && $user->otp_resend_available_at->isFuture()) {
+            Log::info('OTP resend blocked due to timer.', [
+                'available_at' => $user->otp_resend_available_at
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Please wait before requesting a new code.',
+                'resend_after_seconds' => now()->diffInSeconds($user->otp_resend_available_at),
+            ], 429);
+        }
+
+        $otp = $this->generateOtp(6);
+        $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
+
+        Log::info('Generated OTP.', [
+            'otp' => $otp
+        ]);
+
+        $user->update([
+            'otp' => $otp,
+            'email_otp_expires_at' => now()->addMinutes(10),
+            'otp_resend_available_at' => now()->addSeconds($resendSeconds),
+        ]);
+
+        Log::info('User OTP updated in database.');
+
+        Log::info('Sending OTP email...', [
+            'email' => $user->email
+        ]);
+
+        $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
+
+        Log::info('OTP email sent successfully.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP resent to your email.',
+            'resend_after_seconds' => $resendSeconds,
+        ], 200);
+
+    } catch (ValidationException $e) {
+
+        Log::error('Validation Error', [
+            'errors' => $e->errors()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->validator->errors()->first(),
+        ], 422);
+
+    } catch (\Exception $e) {
+
+        Log::error('Resend OTP Error', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to resend OTP.',
+            'error' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
     }
+}
 
     public function login(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
+           
 
             $user = User::where('email', $request->email)->first();
 
@@ -223,9 +274,10 @@ class AuthController extends Controller
 
         // Update user with OTP
         $user->otp = $otp;
-        $user->reset_token_expires_at = now()->addMinutes(10);
+        $user->email_otp_expires_at = now()->addMinutes(10);
         $user->reset_code_verified = false;
         $user->otp_resend_available_at = now()->addSeconds($resendSeconds);
+		$user->is_verified = 0; // Reset verification status
         $user->save();
 
         // Send OTP email
@@ -261,34 +313,42 @@ private function ForgetgenerateOtp($length = 6): string
     return str_pad((string) random_int(0, 999999), $length, '0', STR_PAD_LEFT);
 }
 
- public function verifyResetOtp(Request $request): JsonResponse
+
+
+public function verifyResetOtp(Request $request): JsonResponse
 {
     try {
+
         $request->validate([
             'email' => 'required|email|exists:users,email',
-            'otp' => 'required|string|size:6',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        // Check if OTP matches and not expired
-        if (!$user->reset_otp || $user->otp != $request->otp) {
+        // Check OTP
+        if (empty($user->otp) || $user->otp != $request->otp) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid OTP code.',
             ], 400);
         }
 
-        if ($user->reset_token_expires_at && $user->reset_token_expires_at->isPast()) {
+        // Check expiry (10 minutes)
+        if (
+            !empty($user->reset_token_expires_at) &&
+            Carbon::parse($user->reset_token_expires_at)->lt(now())
+        ) {
             return response()->json([
                 'success' => false,
                 'message' => 'OTP has expired. Please request a new one.',
             ], 400);
         }
 
-        // Mark as verified
-        $user->reset_code_verified = true;
-        $user->save();
+        // Mark OTP verified
+        $user->update([
+            'reset_code_verified' => true,
+            'is_verified' => 1,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -296,27 +356,27 @@ private function ForgetgenerateOtp($length = 6): string
         ], 200);
 
     } catch (ValidationException $e) {
+
         return response()->json([
-            'success' => false, 
-            'message' => $e->getMessage(), 
-            'errors' => $e->errors()
+            'success' => false,
+            'message' => $e->validator->errors()->first(),
         ], 422);
+
     } catch (\Exception $e) {
+
         return response()->json([
             'success' => false,
             'message' => 'OTP verification failed.',
-            'error' => config('app.debug') ? $e->getMessage() : null
+            'error' => config('app.debug') ? $e->getMessage() : null,
         ], 500);
     }
 }
-
 
     public function setNewPassword(Request $request): JsonResponse
     {
         try {
             $request->validate([
                 'email' => 'required|email|exists:users,email',
-                'password' => 'required',
             ]);
 
             $user = User::where('email', $request->email)->first();
@@ -356,8 +416,6 @@ private function ForgetgenerateOtp($length = 6): string
         try {
             $request->validate([
                 'email' => 'required|email|exists:users,email',
-                'otp' => 'required|string|size:4',
-                'password' =>'required', 
 				]);
 
             $user = User::where('email', $request->email)->first();
@@ -387,37 +445,56 @@ private function ForgetgenerateOtp($length = 6): string
     }
 
     public function changePassword(Request $request): JsonResponse
-    {
-        try {
-            $request->validate([
-                'current_password' => 'required',
-                'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
-            ]);
+{
+    try {
 
-            $user = $request->user();
+        $user = Auth::user();
 
-            if (!Hash::check($request->current_password, $user->password)) {
-                return response()->json(['success' => false, 'message' => 'Current password is incorrect.'], 400);
-            }
-
-            $user->update(['password' => Hash::make($request->password)]);
-
-            return response()->json(['success' => true, 'message' => 'Password changed successfully.'], 200);
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
+        // Check current password
+        if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Password change failed.',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+                'message' => 'Current password is incorrect.'
+            ], 400);
         }
+
+        // Check if new password is same as current password
+        if (Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This is your current password. Please enter a new password.'
+            ], 400);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully.'
+        ], 200);
+
+    } catch (ValidationException $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->validator->errors()->first(),
+        ], 422);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Password change failed.',
+            'error' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
     }
+}
 
     public function sendPhoneOtp(Request $request): JsonResponse
     {
         try {
-            $request->validate(['phone' => 'required|string|max:20']);
 
             $user = $request->user();
             $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
@@ -511,7 +588,6 @@ private function ForgetgenerateOtp($length = 6): string
     public function verifyPhoneOtp(Request $request): JsonResponse
     {
         try {
-            $request->validate(['otp' => 'required|string|size:6']);
 
             $user = $request->user();
 
@@ -542,22 +618,44 @@ private function ForgetgenerateOtp($length = 6): string
         }
     }
 
-    public function profile(Request $request): JsonResponse
-    {
-        try {
-            return response()->json([
-                'success' => true,
-                'user' => UserResource::toPayload($request->user()),
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Fetch profile failed.',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
-    }
 
+
+public function profile(Request $request): JsonResponse
+{
+    try {
+
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'image'     => $user->image,
+                'education' => $user->qualification,
+                'career'    => $user->job_title,
+                'religion'  => $user->religion,
+                'bio'       => $user->bio,
+                'age'       => $user->birthday
+                    ? Carbon::parse($user->birthday)->age
+                    : null,
+                'height'    => $user->height,
+                'sect'      => $user->sect,
+                'language'  => $user->mother_tongue,
+                'interest'  => $user->interests,
+                'city'      => $user->city,
+                'country'   => $user->country,
+            ]
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Fetch profile failed.',
+            'error' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
+
+    }
+}
     public function logout(Request $request): JsonResponse
     {
         try {
@@ -587,5 +685,31 @@ private function ForgetgenerateOtp($length = 6): string
         } catch (\Exception $e) {
             // Log error silently
         }
+    }
+
+    private function processReferralReward(User $user): void
+    {
+        if (!$user->referred_by || $user->referred_by === $user->id) {
+            return;
+        }
+
+        if (\App\Models\Referral::where('referred_user_id', $user->id)->exists()) {
+            return;
+        }
+
+        $referrer = User::find($user->referred_by);
+        if (!$referrer) {
+            return;
+        }
+
+        $points = (int) \App\Models\SystemSetting::getVal('invite_reward_points', 50);
+
+        \App\Models\Referral::create([
+            'referrer_id' => $referrer->id,
+            'referred_user_id' => $user->id,
+            'points_earned' => $points,
+        ]);
+
+        $referrer->increment('reward_points', $points);
     }
 }

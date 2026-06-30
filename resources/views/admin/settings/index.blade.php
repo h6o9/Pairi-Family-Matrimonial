@@ -24,7 +24,36 @@
                             <label class="col-sm-3 col-form-label">Reward Points per Registration</label>
                             <div class="col-sm-6">
                                 <input type="number" class="form-control" name="invite_reward_points" value="{{ $settings['invite_reward_points'] ?? 50 }}" required>
-                                <small class="text-muted">These points will be awarded to the user whose referral link was used during registration.</small>
+                                <small class="text-muted">Points awarded when a referred user completes email verification.</small>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5>Redeem Rewards (Points Cost)</h5>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">VIP Plan (1 Month)</label>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" name="redeem_vip_points" value="{{ $settings['redeem_vip_points'] ?? 500 }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">VVIP Plan (1 Month)</label>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" name="redeem_vvip_points" value="{{ $settings['redeem_vvip_points'] ?? 1000 }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Profile Boost</label>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control" name="redeem_boost_points" value="{{ $settings['redeem_boost_points'] ?? 50 }}" required>
+                                <small class="text-muted">Points cost</small>
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control" name="redeem_boost_days" value="{{ $settings['redeem_boost_days'] ?? 7 }}" required>
+                                <small class="text-muted">Boost duration (days)</small>
                             </div>
                         </div>
                         

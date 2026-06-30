@@ -18,6 +18,10 @@ class SettingController extends Controller
     {
         $data = $request->validate([
             'invite_reward_points' => 'required|numeric|min:0',
+            'redeem_vip_points' => 'required|numeric|min:0',
+            'redeem_vvip_points' => 'required|numeric|min:0',
+            'redeem_boost_points' => 'required|numeric|min:0',
+            'redeem_boost_days' => 'required|integer|min:1',
         ]);
 
         foreach ($data as $key => $value) {

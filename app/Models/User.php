@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -46,6 +47,9 @@ class User extends Authenticatable
         'photos' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
+        'profile_photo_visible' => 'boolean',
+        'additional_photos_visible' => 'boolean',
+        'profile_boost_until' => 'datetime',
     ];
 
     public function getAgeAttribute(): ?int
@@ -104,5 +108,28 @@ class User extends Authenticatable
     public function referrals(): HasMany
     {
         return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function activeSubscription(): ?UserSubscription
+    {
+        return $this->subscriptions()
+            ->with('plan')
+            ->whereIn('status', ['verified', 'free'])
+            ->whereNull('cancelled_at')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->latest()
+            ->first();
     }
 }
