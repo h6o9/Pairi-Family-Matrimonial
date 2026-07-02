@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -37,17 +38,30 @@ class Handler extends ExceptionHandler
         if ($request->expectsJson()) {
             return response()->json(['message' => 'UnAuthenticated'], 401);
         }
-        $guard = Arr::get($exception->guards(), '0');
+
+        $guard = Arr::get($exception->guards(), 0);
+
         switch ($guard) {
             case 'admin':
-                $login = '/admin/login';
+                return redirect()->guest(route('admin.login'));
+            case 'marriage_bureau':
+                return redirect()->guest(route('marriage-bureau.login'));
+            case 'staff':
+                if (Route::has('staff.login')) {
+                    return redirect()->guest(route('staff.login'));
+                }
                 break;
-
             default:
-                $login = '/login';
-        }
+                if ($redirectTo = $exception->redirectTo()) {
+                    return redirect()->guest($redirectTo);
+                }
 
-        return Redirect()->guest($login);
+                if (Route::has('admin.login')) {
+                    return redirect()->guest(route('admin.login'));
+                }
+
+                return redirect()->guest('/');
+        }
     }
 
     public function render($request, Throwable $exception)

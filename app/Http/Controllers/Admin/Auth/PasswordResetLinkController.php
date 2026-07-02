@@ -4,33 +4,20 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
-use App\Traits\GetGlobalInformationTrait;
-use App\Traits\GlobalMailTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
-    use GetGlobalInformationTrait, GlobalMailTrait;
-
-    /**
-     * Display the password reset link request view.
-     */
     public function create(): View
     {
         return view('admin.auth.forgot-password');
     }
 
-    /**
-     * Handle an incoming password reset link request.
-     */
     public function custom_forget_password(Request $request)
     {
-
-        $setting = Cache::get('setting');
-
         $request->validate([
             'email' => ['required', 'email'],
         ], [
@@ -38,27 +25,35 @@ class PasswordResetLinkController extends Controller
         ]);
 
         $email = strtolower(trim($request->email));
-
         $admin = Admin::whereRaw('LOWER(email) = ?', [$email])->first();
 
-        if ($admin) {
-            $admin->forget_password_token = Str::random(100);
-            $admin->save();
-
-            [$subject, $message] = $this->fetchEmailTemplate('password_reset', ['user_name' => $admin->name]);
-            $link                = [__('CONFIRM YOUR EMAIL') => route('admin.password.reset', $admin->forget_password_token)];
-
-            $this->sendMail($admin->email, $subject, $message, $link);
-
-            $notification = __('A password reset link has been send to your mail');
-            $notification = ['message' => $notification, 'alert-type' => 'success'];
-
-            return redirect()->back()->with($notification);
-        } else {
-            $notification = __('Email does not exist');
-            $notification = ['message' => $notification, 'alert-type' => 'error'];
-
-            return redirect()->back()->with($notification);
+        if (!$admin) {
+            return redirect()->back()->with(['message' => __('Email does not exist'), 'alert-type' => 'error']);
         }
+
+        $token = Str::random(100);
+        $admin->forget_password_token = $token;
+        $admin->save();
+
+        $resetUrl = route('admin.password.reset', $token);
+
+        try {
+            Mail::send('emails.password-reset', [
+                'subject' => 'Password Reset - Piyari Family',
+                'heading' => 'Password Reset Request',
+                'logoUrl' => url('assets/img/piyari_logo.png'),
+                'userName' => $admin->name,
+                'resetUrl' => $resetUrl,
+                'messageLine' => 'We received a request to reset your admin account password.',
+            ], function ($mail) use ($admin) {
+                $mail->to($admin->email)
+                    ->subject('Password Reset - Piyari Family')
+                    ->from(config('mail.from.address'), 'Piyari Family');
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['message' => 'Could not send reset email. Please try again.', 'alert-type' => 'error']);
+        }
+
+        return redirect()->back()->with(['message' => __('A password reset link has been send to your mail'), 'alert-type' => 'success']);
     }
 }

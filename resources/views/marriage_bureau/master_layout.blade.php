@@ -68,6 +68,27 @@
         .logo-img {
             max-height: 40px;
         }
+        .panel-user-dropdown .dropdown-item.has-icon {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #34395e;
+        }
+        .panel-user-dropdown .dropdown-item.has-icon i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+            color: #6E0016;
+        }
+        .panel-user-dropdown .dropdown-item.has-icon:hover {
+            background-color: #f8f9fa;
+            color: #6E0016;
+        }
+        .nav-link-user .d-sm-none.d-lg-inline-block,
+        .nav-link-user span {
+            color: #ffffff !important;
+        }
     </style>
 </head>
 
@@ -93,27 +114,12 @@
                 </div>
                 <div class="mr-auto me-md-auto search-box position-relative">
                 </div>
-                <ul class="navbar-nav navbar-right ml-auto">
-                    <li class="dropdown"><a href="#" data-toggle="dropdown"
-                            class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                            @if ($header_user?->image)
-                                <img alt="image" src="{{ asset($header_user?->image) }}" class="rounded-circle mr-1">
-                            @else
-                                <img alt="image" src="{{ asset('backend/img/avatar/avatar-1.png') }}"
-                                    class="rounded-circle mr-1">
-                            @endif
-                            <div class="d-sm-none d-lg-inline-block">{{ $header_user?->name ?? 'Bureau' }}</div>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <form action="{{ route('marriage-bureau.logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item has-icon text-danger" style="display: flex; align-items: center; border:none; background:none; width: 100%; cursor: pointer;">
-                                    <i class="fas fa-sign-out-alt"></i> {{ __('Logout') }}
-                                </button>
-                            </form>
-                        </div>
-                    </li>
-                </ul>
+                @include('partials.panel-user-dropdown', [
+                    'profileRoute' => route('marriage-bureau.profile.edit'),
+                    'logoutRoute' => route('marriage-bureau.logout'),
+                    'userName' => $header_user?->name ?? 'Bureau',
+                    'userImage' => $header_user?->image ?? null,
+                ])
             </nav>
 
             @include('marriage_bureau.sidebar')
@@ -136,6 +142,27 @@
     @include('admin.partials.javascripts')
 
     @stack('js')
+
+    <script>
+        (function () {
+            function initPanelUserDropdowns() {
+                document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                        var instance = bootstrap.Dropdown.getInstance(el);
+                        if (instance) {
+                            instance.dispose();
+                        }
+                        new bootstrap.Dropdown(el);
+                    }
+                });
+            }
+            if (!window.__panelDropdownBound) {
+                window.__panelDropdownBound = true;
+                document.addEventListener('turbolinks:load', initPanelUserDropdowns);
+            }
+            initPanelUserDropdowns();
+        })();
+    </script>
 
 </body>
 

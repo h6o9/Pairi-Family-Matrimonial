@@ -45,14 +45,21 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:marriage_bureaus',
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $bureau = MarriageBureau::create([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = file_upload(file: $request->file('image'), path: 'uploads/marriage-bureau/');
+        }
+
+        $bureau = MarriageBureau::create($data);
 
         Auth::guard('marriage_bureau')->login($bureau);
 

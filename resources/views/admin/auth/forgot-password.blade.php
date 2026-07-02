@@ -1,47 +1,41 @@
 @extends('admin.auth.app')
-
 @section('title')
-    <title>{{ __('Forgot Password') }}</title>
+    <title>{{ __('Forgot Password') }} - Piyari Family</title>
 @endsection
-
 @section('content')
-    <section class="section">
-        <div class="container my-0">
-            <div class="row justify-content-center align-items-center min-vh-100">
-                <div class="col-md-4 my-3">
-                    <div class="login-brand">
-                        <a href="#">
-                            <img src="{{ asset('public/backend/img/admin-auth-bg.jpg') }}" alt="Home Service" width="220">
-                        </a>
-                    </div>
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <x-admin.form-title :text="__('Forgot Password')" />
-                        </div>
-                        <div class="card-body">
-                            <form action="{{ route('admin.forget-password') }}" method="POST">
-                                @csrf
-
-                                <div class="form-group">
-                                    <x-admin.form-input id="email" name="email" type="email"
-                                        value="{{ old('email') }}" label="{{ __('Email') }}" required="true" />
-                                </div>
-                                <div class="form-group">
-                                    <x-admin.button class="btn-lg btn-block" type="submit"
-                                        text="{{ __('Send Reset Link') }}" />
-                                </div>
-                                <div class="form-group">
-                                    <div class="d-block btn btn-primary">
-                                        <a href="{{ route('admin.login') }}"
-                                            class="text-white">{{ __('Go to login page') }}</a>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+<style>
+    :root { --primary: #6E0016; }
+    body, #app, .section { background: #fff !important; }
+    .auth-page-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+    .auth-card { width: 100%; max-width: 420px; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: #5a0c0e; border-color: #5a0c0e; }
+    .text-primary { color: var(--primary) !important; }
+</style>
+<section class="section auth-page-wrap">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="Piyari Family" width="200" class="mb-3">
+            <h4 class="mb-1">{{ __('Forgot Password') }}</h4>
+            <p class="text-muted mb-0">Admin Panel</p>
         </div>
-    </section>
+
+        @if(session('message'))
+            <div class="alert alert-{{ session('alert-type') === 'error' ? 'danger' : 'success' }}">{{ session('message') }}</div>
+        @endif
+
+        <form action="{{ route('admin.forget-password') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label for="email">{{ __('Email') }}</label>
+                <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">{{ __('Send Reset Link') }}</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="{{ route('admin.login') }}" class="text-primary">{{ __('Go to login page') }}</a>
+        </div>
+    </div>
+</section>
 @endsection

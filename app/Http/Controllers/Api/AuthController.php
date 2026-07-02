@@ -496,7 +496,13 @@ public function verifyResetOtp(Request $request): JsonResponse
     {
         try {
 
-            $user = $request->user();
+            $user = Auth::user();
+			 if ($user->phone_verified === 1) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Phone is already verified.'
+            ], 400);
+        }
             $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
 
             if ($user->phone_otp_resend_available_at && $user->phone_otp_resend_available_at->isFuture()) {
@@ -585,38 +591,61 @@ public function verifyResetOtp(Request $request): JsonResponse
         }
     }
 
-    public function verifyPhoneOtp(Request $request): JsonResponse
-    {
-        try {
+   public function verifyPhoneOtp(Request $request): JsonResponse
+{
+    try {
+        $user = Auth::user();
 
-            $user = $request->user();
+        // Remove this line - it's causing the error
+        // return $user->phone_verified;
 
-            if ($user->phone_otp !== $request->otp || ($user->phone_otp_expires_at && $user->phone_otp_expires_at->isPast())) {
-                return response()->json(['success' => false, 'message' => 'Invalid or expired code.'], 400);
-            }
-
-            $user->update([
-                'phone_verified' => true,
-                'phone_otp' => null,
-                'phone_otp_expires_at' => null,
-                'phone_otp_resend_available_at' => null,
-            ]);
-
+        if ($user->phone_verified === 1) {
             return response()->json([
-                'success' => true,
-                'message' => 'Number verified! Your profile has been verified successfully.',
-                'user' => UserResource::toPayload($user->fresh()),
-            ], 200);
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Verify phone OTP failed.',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+                'success' => false, 
+                'message' => 'Phone is already verified.'
+            ], 400);
         }
+
+        // Validate OTP
+        $request->validate([
+            'otp' => 'required|string|size:6'
+        ]);
+
+        if ($user->phone_otp !== $request->otp || 
+            ($user->phone_otp_expires_at && $user->phone_otp_expires_at->isPast())) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Invalid or expired code.'
+            ], 400);
+        }
+
+        $user->update([
+            'phone_verified' => true,
+            'phone_otp' => null,
+            'phone_otp_expires_at' => null,
+            'phone_otp_resend_available_at' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Number verified! Your profile has been verified successfully.',
+            'user' => UserResource::toPayload($user->fresh()),
+        ], 200);
+        
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false, 
+            'message' => $e->getMessage(), 
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Verify phone OTP failed.',
+            'error' => config('app.debug') ? $e->getMessage() : null
+        ], 500);
     }
+}
 
 
 
@@ -679,8 +708,22 @@ public function profile(Request $request): JsonResponse
     private function sendOtpEmail(string $email, string $otp, string $subject): void
     {
         try {
-            Mail::raw("Your Pairi Family verification code is: {$otp}\n\nThis code expires in 10 minutes.", function ($mail) use ($email, $subject) {
-                $mail->to($email)->subject($subject);
+            $logoUrl = url('assets/img/piyari_logo.png');
+            $heading = str_contains($subject, 'Password Reset') ? 'Password Reset Code' : 'Email Verification';
+
+            Mail::send('emails.otp', [
+                'subject' => $subject,
+                'heading' => $heading,
+                'logoUrl' => $logoUrl,
+                'otp' => $otp,
+                'greeting' => 'Dear User,',
+                'messageLine' => str_contains($subject, 'Password Reset')
+                    ? 'We received a request to reset your password. Use the code below to continue:'
+                    : 'Thank you for joining Piyari Family. Use the verification code below to complete your registration:',
+            ], function ($mail) use ($email, $subject) {
+                $mail->to($email)
+                    ->subject($subject)
+                    ->from(config('mail.from.address'), 'Piyari Family');
             });
         } catch (\Exception $e) {
             // Log error silently
