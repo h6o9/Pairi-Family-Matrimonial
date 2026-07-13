@@ -34,13 +34,13 @@ class MatchController extends Controller
                 ->limit(100)
                 ->get();
 
-            $ranked = $this->matchService->rankProfiles($viewer, $candidates);
+            $ranked = $this->matchService->rankProfilesForHome($viewer, $candidates);
 
             $topMatch = $ranked->first();
             $suggested = $ranked->slice(1, 10)->values();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'greeting' => $this->greeting($viewer->name),
                 'top_match' => $topMatch ? ProfileCardResource::make($topMatch) : null,
                 'suggested_matches' => ProfileCardResource::collection($suggested),
@@ -65,7 +65,7 @@ class MatchController extends Controller
             $query = $this->matchService->applyFilters($query, $viewer, $filters);
 
             $perPage = min((int) $request->get('per_page', 20), 50);
-            $candidates = $query->latest('created_at')->limit(200)->get();
+            $candidates = $query->limit(500)->get();
             $ranked = $this->matchService->rankProfiles($viewer, $candidates);
 
             $page = max((int) $request->get('page', 1), 1);
@@ -73,11 +73,11 @@ class MatchController extends Controller
             $items = $ranked->slice(($page - 1) * $perPage, $perPage)->values();
 
             return response()->json([
-                'success' => true,
-                'filters_applied' => array_filter($filters),
+                'success' => 200,
+                'filters_applied' => array_filter($filters, fn ($value) => $value !== null && $value !== '' && $value !== false),
                 'quick_filters' => [
                     'near_me' => 'Same city or within 50km',
-                    'new_profiles' => 'Joined in last 30 days',
+                    'new_profiles' => 'Joined in last 3 days',
                     'verified' => 'Phone verified profiles',
                 ],
                 'data' => ProfileCardResource::collection($items),
@@ -100,6 +100,52 @@ class MatchController extends Controller
     public function filter(Request $request): JsonResponse
     {
         return $this->search($request);
+    }
+
+    public function profileDetails(Request $request, User $user): JsonResponse
+    {
+        return $this->show($request, $user);
+    }
+
+    public function bestMatch(Request $request): JsonResponse
+    {
+        try {
+            $viewer = $request->user();
+
+            if (!$viewer->gender) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please complete your profile gender to see matches.',
+                ], 422);
+            }
+
+            $candidates = $this->matchService->baseQuery($viewer)->limit(500)->get();
+            $ranked = $this->matchService->rankProfiles($viewer, $candidates);
+            $top = $ranked->first();
+
+            if (!$top) {
+                return response()->json([
+                    'success' => 200,
+                    'message' => 'No matching profile found.',
+                    'profile' => null,
+                    'match_score' => 0,
+                ], 200);
+            }
+
+            $profile = $this->prepareProfile($viewer, $top);
+
+            return response()->json([
+                'success' => 200,
+                'match_score' => (int) $profile->match_score,
+                'profile' => ProfileDetailResource::make($profile),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load best match profile.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     public function show(Request $request, User $user): JsonResponse
@@ -129,15 +175,11 @@ class MatchController extends Controller
                 ], 404);
             }
 
-            $user->match_score = $this->matchService->scoreProfile($viewer, $user);
-            $user->interest_sent = $viewer->sentInterests()
-                ->where('to_user_id', $user->id)
-                ->where('action', 'interest')
-                ->exists();
+            $profile = $this->prepareProfile($viewer, $user);
 
             return response()->json([
-                'success' => true,
-                'profile' => ProfileDetailResource::make($user),
+                'success' => 200,
+                'profile' => ProfileDetailResource::make($profile),
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -148,10 +190,27 @@ class MatchController extends Controller
         }
     }
 
+    private function prepareProfile(User $viewer, User $user): User
+    {
+        $user->match_score = $this->matchService->scoreProfile($viewer, $user);
+        $user->interest_sent = $viewer->sentInterests()
+            ->where('to_user_id', $user->id)
+            ->where('action', 'interest')
+            ->exists();
+        $user->interest_received = $viewer->receivedInterests()
+            ->where('from_user_id', $user->id)
+            ->where('action', 'interest')
+            ->exists();
+        $user->mutual_match = $user->interest_sent && $user->interest_received;
+
+        return $user;
+    }
+
     private function parseFilters(Request $request): array
     {
         return [
             'search' => $request->get('search'),
+            'name' => $request->get('name'),
             'city' => $request->get('city'),
             'cities' => $request->get('cities'),
             'age_min' => $request->get('age_min'),

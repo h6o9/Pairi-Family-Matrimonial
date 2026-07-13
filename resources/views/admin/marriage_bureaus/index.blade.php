@@ -15,10 +15,10 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped data-table" id="bureausTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Status</th>
@@ -27,9 +27,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($bureaus as $bureau)
+                                @foreach($bureaus as $bureau)
                                 <tr>
-                                    <td>{{ $bureau->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $bureau->name }}</td>
                                     <td>{{ $bureau->email }}</td>
                                     <td>
@@ -44,15 +44,10 @@
                                         <a href="{{ route('admin.marriage-bureaus.show', $bureau->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>
                                     </td>
                                 </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-danger">No marriage bureaus found.</td>
-                                </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                    {{ $bureaus->links() }}
                 </div>
             </div>
         </div>

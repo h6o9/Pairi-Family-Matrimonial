@@ -12,7 +12,7 @@ class MarriageBureauController extends Controller
      */
     public function index()
     {
-        $bureaus = \App\Models\MarriageBureau::latest()->paginate(15);
+        $bureaus = \App\Models\MarriageBureau::latest()->get();
         return view('admin.marriage_bureaus.index', compact('bureaus'));
     }
 

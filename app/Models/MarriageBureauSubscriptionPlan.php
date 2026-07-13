@@ -10,7 +10,11 @@ class MarriageBureauSubscriptionPlan extends Model
         'name',
         'price',
         'payment_status',
-        'description',
+        'features',
         'status',
+    ];
+
+    protected $casts = [
+        'features' => 'array',
     ];
 }

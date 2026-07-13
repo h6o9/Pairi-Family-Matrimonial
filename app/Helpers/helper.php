@@ -37,6 +37,49 @@ if (!function_exists('logError')) {
     }
 }
 
+if (!function_exists('app_base_url')) {
+    function app_base_url(): string
+    {
+        return rtrim((string) config('pairi_family.base_url', config('app.url')), '/');
+    }
+}
+
+if (!function_exists('referral_link')) {
+    function referral_link(?string $referralCode): ?string
+    {
+        if (empty($referralCode)) {
+            return null;
+        }
+
+        return app_base_url() . '/' . $referralCode;
+    }
+}
+
+if (!function_exists('media_url')) {
+    function media_url(?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (str_starts_with($normalized, 'uploads/store/')) {
+            return app_base_url() . '/' . $normalized;
+        }
+
+        if (str_starts_with($normalized, 'uploads/')) {
+            return app_base_url() . '/' . $normalized;
+        }
+
+        return app_base_url() . '/uploads/store/' . $normalized;
+    }
+}
+
 if (!function_exists('file_upload')) {
     function file_upload(UploadedFile $file, string $path = 'uploads/custom-images/', string|null $oldFile = null): ?string
     {

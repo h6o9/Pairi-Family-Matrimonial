@@ -15,43 +15,57 @@
 
         <div class="section-body">
             <a href="{{ route('marriage-bureau.users.create') }}" class="btn btn-primary mb-4"><i class="fas fa-plus"></i> Create New User</a>
+            <p class="text-muted">Profiles created here appear as regular profiles on the Piyari Family app (visible in search & matches), but cannot be used to log in to the app.</p>
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped data-table" id="mbUsersTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>#</th>
+                                    <th>Photo</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
+                                    <th>Gender / Age</th>
+                                    <th>City</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($users as $user)
                                 <tr>
-                                    <td>{{ $user->id }}</td>
-                                    <td>{{ $user->name }}</td>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        @if($user->profile_photo)
+                                            <img src="{{ $user->profile_photo }}" style="width:40px;height:40px;object-fit:cover;" class="rounded-circle">
+                                        @else
+                                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td><a href="{{ route('marriage-bureau.users.show', $user->id) }}">{{ $user->name }}</a></td>
                                     <td>{{ $user->email }}</td>
                                     <td>{{ $user->phone }}</td>
+                                    <td>{{ ucfirst($user->gender ?? '-') }}{{ $user->age ? ' / '.$user->age : '' }}</td>
+                                    <td>{{ $user->city ?? '-' }}</td>
+                                    <td><span class="badge badge-success">Live on App</span></td>
                                     <td>
+                                        <a href="{{ route('marriage-bureau.users.show', $user->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
                                         <a href="{{ route('marriage-bureau.users.edit', $user->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a>
-                                        <form action="{{ route('marriage-bureau.users.destroy', $user->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
-                                        </form>
+                                        <x-admin.delete-button class="deleteForm" data-url="{{ route('marriage-bureau.users.destroy', $user->id) }}" text="Delete" />
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                        {{ $users->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </section>
 </div>
+<x-admin.delete-modal />
 @endsection

@@ -12,7 +12,7 @@ class MarriageBureauSubscriptionPlanController extends Controller
      */
     public function index()
     {
-        $plans = \App\Models\MarriageBureauSubscriptionPlan::latest()->paginate(15);
+        $plans = \App\Models\MarriageBureauSubscriptionPlan::latest()->get();
         return view('admin.marriage_bureau_subscription_plans.index', compact('plans'));
     }
 
@@ -21,18 +21,28 @@ class MarriageBureauSubscriptionPlanController extends Controller
      */
     public function create()
     {
+        if (\App\Models\MarriageBureauSubscriptionPlan::exists()) {
+            return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Only one subscription plan is allowed. Please edit the existing plan instead.', 'alert-type' => 'error']);
+        }
+
         return view('admin.marriage_bureau_subscription_plans.create');
     }
 
     public function store(Request $request)
     {
+        if (\App\Models\MarriageBureauSubscriptionPlan::exists()) {
+            return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Only one subscription plan is allowed. Please edit the existing plan instead.', 'alert-type' => 'error']);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'payment_status' => 'required|in:free,paid',
-            'description' => 'nullable|string',
+            'features' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
+
+        $validated['features'] = $this->parseFeatures($request->input('features'));
 
         \App\Models\MarriageBureauSubscriptionPlan::create($validated);
         
@@ -51,9 +61,11 @@ class MarriageBureauSubscriptionPlanController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'payment_status' => 'required|in:free,paid',
-            'description' => 'nullable|string',
+            'features' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
+
+        $validated['features'] = $this->parseFeatures($request->input('features'));
 
         $plan = \App\Models\MarriageBureauSubscriptionPlan::findOrFail($id);
         $plan->update($validated);
@@ -61,11 +73,20 @@ class MarriageBureauSubscriptionPlanController extends Controller
         return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Plan updated successfully.', 'alert-type' => 'success']);
     }
 
+    private function parseFeatures(?string $features): array
+    {
+        if (!$features) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode("\n", $features))));
+    }
+
     public function destroy(string $id)
     {
         $plan = \App\Models\MarriageBureauSubscriptionPlan::findOrFail($id);
         $plan->delete();
 
-        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Plan deleted successfully.', 'alert-type' => 'success']);
+        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
     }
 }

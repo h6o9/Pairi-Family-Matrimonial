@@ -106,6 +106,18 @@
                 </div>
             @endif
 
+            @if($pendingSub)
+            <div class="row justify-content-center mb-4">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-hourglass-half"></i>
+                        Your request to switch to <strong>{{ $pendingSub->plan->name ?? 'a new plan' }}</strong> is pending admin verification.
+                        Please visit your <a href="{{ route('marriage-bureau.dashboard') }}">Dashboard</a> to upload your payment screenshot if you haven't already.
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if($activeSub)
             <div class="row justify-content-center mb-5">
                 <div class="col-12 col-md-8 col-lg-6">
@@ -117,40 +129,61 @@
                         <div class="card mt-4 text-dark" style="border-radius: 15px;">
                             <div class="card-body">
                                 <h5><i class="fas fa-check-circle text-success"></i> Subscription Active</h5>
+                                <p class="mb-1">Your current plan: <strong>{{ $activeSub->plan->name ?? '-' }}</strong></p>
                                 <p class="mb-0">Your Marriage Bureau Premium plan is fully active.</p>
-                                <a href="#" class="btn btn-primary mt-3"><i class="fas fa-users"></i> Start Exploring Matches</a>
+                                <a href="{{ route('marriage-bureau.users.index') }}" class="btn btn-primary mt-3"><i class="fas fa-users"></i> Start Exploring Matches</a>
+                                @if(!$pendingSub)
+                                <button type="button" class="btn btn-outline-secondary mt-3 ml-2" id="changePlanBtn"><i class="fas fa-exchange-alt"></i> Change Plan</button>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            @else
-            <div class="row justify-content-center">
+            @endif
+
+            @if(!$pendingSub)
+            <div class="row justify-content-center {{ $activeSub ? 'd-none' : '' }}" id="planPickerSection">
                 <div class="col-12 col-md-10 col-lg-8">
+                    @if(!$activeSub)
                     <div class="premium-bg mb-5">
                         <i class="fas fa-crown crown-icon"></i>
                         <h2 class="font-weight-bold">This Feature is Premium</h2>
                         <p>Upgrade to unlock unlimited access and start managing users</p>
                     </div>
+                    @else
+                    <h4 class="text-center mb-4" style="color: #7B1113;">Choose a New Plan</h4>
+                    @endif
 
                     <form action="{{ route('marriage-bureau.subscription.store') }}" method="POST" id="subscriptionForm">
                         @csrf
                         <div class="row mb-4">
                             @foreach($plans as $plan)
                             <div class="col-md-6 mb-3">
-                                <div class="card plan-card h-100 p-3" onclick="selectPlan({{ $plan->id }}, {{ $plan->price }})" id="plan-{{ $plan->id }}">
+                                <div class="card plan-card h-100 p-3 {{ $activeSub && (int) $activeSub->marriage_bureau_subscription_plan_id === $plan->id ? 'selected' : '' }}"
+                                     onclick="selectPlan({{ $plan->id }}, {{ $plan->price }}, '{{ $plan->payment_status }}')" id="plan-{{ $plan->id }}">
                                     <div class="card-body text-center">
+                                        @if($activeSub && (int) $activeSub->marriage_bureau_subscription_plan_id === $plan->id)
+                                            <span class="badge badge-success mb-2">Current Plan</span>
+                                        @endif
                                         <h4 class="font-weight-bold" style="color: #7B1113;">{{ $plan->name }}</h4>
-                                        <h2 class="my-3" style="color: #F5A623;">PKR {{ number_format($plan->price, 0) }}</h2>
+                                        <h2 class="my-3" style="color: #F5A623;">
+                                            @if($plan->payment_status === 'free')
+                                                Free
+                                            @else
+                                                PKR {{ number_format($plan->price, 0) }}
+                                            @endif
+                                        </h2>
                                         <p class="text-muted">{{ $plan->description ?? 'Premium features unlocked.' }}</p>
                                         <input type="radio" name="plan_id" value="{{ $plan->id }}" class="d-none" id="radio-plan-{{ $plan->id }}" required>
                                         
                                         <hr>
                                         <ul class="feature-list">
-                                            <li><i class="fas fa-unlock"></i> Create & Manage Users</li>
-                                            <li><i class="fas fa-search"></i> Advanced Search Filters</li>
-                                            <li><i class="fas fa-bolt"></i> Profile Boost</li>
-                                            <li><i class="fas fa-comments"></i> Unlimited Messaging</li>
+                                            @forelse(($plan->features ?? []) as $feature)
+                                                <li><i class="fas fa-check-circle"></i> {{ $feature }}</li>
+                                            @empty
+                                                <li><i class="fas fa-check-circle"></i> Create & Manage Users</li>
+                                            @endforelse
                                         </ul>
                                     </div>
                                 </div>
@@ -166,7 +199,7 @@
                                 <h6 class="mb-3">Choose Payment Method</h6>
                                 
                                 <label class="payment-method-card d-flex align-items-center w-100">
-                                    <input type="radio" name="payment_method" value="easypaisa" class="mr-3" required>
+                                    <input type="radio" name="payment_method" value="easypaisa" class="mr-3">
                                     <i class="fas fa-mobile-alt payment-icon"></i>
                                     <div>
                                         <h6 class="mb-0">Easypaisa / JazzCash</h6>
@@ -191,6 +224,13 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="text-center mb-4 d-none" id="freeConfirmSection">
+                            <p class="text-muted small"><i class="fas fa-info-circle"></i> This is a free plan, no payment is required.</p>
+                            <button type="submit" class="btn btn-premium btn-lg w-100" id="freeButton">
+                                <i class="fas fa-check-circle"></i> Activate Free Plan
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -202,18 +242,37 @@
 
 @push('js')
 <script>
-    function selectPlan(id, price) {
+    function selectPlan(id, price, paymentStatus) {
         $('.plan-card').removeClass('selected');
         $('#plan-' + id).addClass('selected');
         $('#radio-plan-' + id).prop('checked', true);
-        
-        $('#displayPrice').text(new Intl.NumberFormat().format(price));
-        $('#paymentSection').removeClass('d-none');
-        
-        // Scroll to payment
-        $('html, body').animate({
-            scrollTop: $("#paymentSection").offset().top - 100
-        }, 500);
+
+        if (paymentStatus === 'free') {
+            // Free plans skip the payment step entirely - no payment method needed.
+            $('#paymentSection').addClass('d-none');
+            $('#paymentSection input[name="payment_method"]').prop('checked', false).prop('required', false);
+            $('#freeConfirmSection').removeClass('d-none');
+
+            $('html, body').animate({
+                scrollTop: $('#freeConfirmSection').offset().top - 100
+            }, 500);
+        } else {
+            $('#freeConfirmSection').addClass('d-none');
+            $('#displayPrice').text(new Intl.NumberFormat().format(price));
+            $('#paymentSection').removeClass('d-none');
+            $('#paymentSection input[name="payment_method"]').prop('required', true);
+
+            $('html, body').animate({
+                scrollTop: $('#paymentSection').offset().top - 100
+            }, 500);
+        }
     }
+
+    $(document).on('click', '#changePlanBtn', function () {
+        $('#planPickerSection').removeClass('d-none');
+        $('html, body').animate({
+            scrollTop: $('#planPickerSection').offset().top - 100
+        }, 500);
+    });
 </script>
 @endpush

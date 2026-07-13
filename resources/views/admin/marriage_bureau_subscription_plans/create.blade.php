@@ -33,8 +33,9 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" name="description" rows="4"></textarea>
+                            <label>Features</label>
+                            <textarea class="form-control" name="features" rows="5" placeholder="Enter one feature per line, e.g.&#10;Create &amp; Manage Users&#10;Advanced Search Filters&#10;Profile Boost&#10;Unlimited Messaging"></textarea>
+                            <small class="text-muted">Each line will show as a separate feature on the marriage bureau plan card.</small>
                         </div>
 
                         <div class="form-group">

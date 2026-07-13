@@ -16,7 +16,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-striped">
+                    <table class="table table-striped data-table" id="subscriptionsTable">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -29,9 +29,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($subscriptions as $sub)
+                            @foreach($subscriptions as $sub)
                             <tr>
-                                <td>{{ $sub->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td><strong>{{ $sub->name }}</strong></td>
                                 <td>{{ $sub->type }}</td>
                                 <td>PKR {{ number_format($sub->price, 2) }}</td>
@@ -43,18 +43,10 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('admin.subscriptions.edit', $sub->id) }}" class="btn btn-info btn-sm" title="Edit"><i class="fa fa-edit"></i></a>
-                                    <form action="{{ route('admin.subscriptions.destroy', $sub->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this plan?')" title="Delete"><i class="fa fa-trash"></i></button>
-                                    </form>
+                                    <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.subscriptions.destroy', $sub->id) }}" title="Delete" />
                                 </td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">No subscriptions found.</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -62,4 +54,5 @@
         </div>
     </section>
 </div>
+<x-admin.delete-modal />
 @endsection

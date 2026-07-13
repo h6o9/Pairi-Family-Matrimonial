@@ -8,6 +8,16 @@ use Illuminate\Support\Collection;
 
 class MatchService
 {
+    public function newProfileDays(): int
+    {
+        return (int) config('pairi_family.new_profile_days', 3);
+    }
+
+    public function isNewProfile(User $user): bool
+    {
+        return $user->created_at?->gte(now()->subDays($this->newProfileDays())) ?? false;
+    }
+
     public function oppositeGender(?string $gender): ?string
     {
         return match ($gender) {
@@ -43,6 +53,10 @@ class MatchService
             });
         }
 
+        if (!empty($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
         if (!empty($filters['city'])) {
             $query->where('city', 'like', '%' . $filters['city'] . '%');
         }
@@ -66,7 +80,7 @@ class MatchService
         }
 
         if (!empty($filters['qualification']) && $filters['qualification'] !== 'Any') {
-            $query->where('qualification', $filters['qualification']);
+            $query->where('qualification', 'like', '%' . $filters['qualification'] . '%');
         }
 
         if (!empty($filters['profession']) && $filters['profession'] !== 'Any') {
@@ -74,15 +88,20 @@ class MatchService
         }
 
         if (!empty($filters['religion']) && $filters['religion'] !== 'Any') {
-            $query->where('religion', $filters['religion']);
+            $religion = strtolower(trim($filters['religion']));
+            if (in_array($religion, ['islam', 'muslim'], true)) {
+                $query->whereRaw('LOWER(religion) IN (?, ?)', ['islam', 'muslim']);
+            } else {
+                $query->whereRaw('LOWER(religion) = ?', [$religion]);
+            }
         }
 
         if (!empty($filters['marital_status'])) {
-            $query->where('marital_status', $filters['marital_status']);
+            $query->whereRaw('LOWER(marital_status) = ?', [strtolower(trim($filters['marital_status']))]);
         }
 
         if (!empty($filters['monthly_income'])) {
-            $query->where('monthly_income', $filters['monthly_income']);
+            $query->where('monthly_income', 'like', '%' . $filters['monthly_income'] . '%');
         }
 
         if (!empty($filters['near_me'])) {
@@ -99,7 +118,7 @@ class MatchService
         }
 
         if (!empty($filters['new_profiles'])) {
-            $query->where('created_at', '>=', now()->subDays(30));
+            $query->where('created_at', '>=', now()->subDays($this->newProfileDays()));
         }
 
         if (!empty($filters['verified'])) {
@@ -123,7 +142,11 @@ class MatchService
         }
 
         if ($viewer->city && $candidate->city && strcasecmp($viewer->city, $candidate->city) === 0) {
-            $score += 10;
+            $score += 20;
+        }
+
+        if ($viewer->qualification && $candidate->qualification && strcasecmp($viewer->qualification, $candidate->qualification) === 0) {
+            $score += 20;
         }
 
         if ($viewer->religion && $candidate->religion && strcasecmp($viewer->religion, $candidate->religion) === 0) {
@@ -133,9 +156,9 @@ class MatchService
         if ($viewer->age && $candidate->age) {
             $ageDiff = abs($viewer->age - $candidate->age);
             if ($ageDiff <= 3) {
-                $score += 10;
+                $score += 20;
             } elseif ($ageDiff <= 5) {
-                $score += 5;
+                $score += 10;
             }
         }
 
@@ -143,8 +166,8 @@ class MatchService
             $score += 5;
         }
 
-        if ($candidate->created_at && $candidate->created_at->gte(now()->subDays(7))) {
-            $score += 5;
+        if ($this->isNewProfile($candidate)) {
+            $score += 10;
         }
 
         return min($score, 100);
@@ -157,5 +180,23 @@ class MatchService
 
             return $candidate;
         })->sortByDesc('match_score')->values();
+    }
+
+    public function rankProfilesForHome(User $viewer, Collection $candidates): Collection
+    {
+        return $candidates->map(function (User $candidate) use ($viewer) {
+            $candidate->match_score = $this->scoreProfile($viewer, $candidate);
+
+            return $candidate;
+        })->sort(function (User $a, User $b) {
+            $aNew = $this->isNewProfile($a) ? 1 : 0;
+            $bNew = $this->isNewProfile($b) ? 1 : 0;
+
+            if ($aNew !== $bNew) {
+                return $bNew <=> $aNew;
+            }
+
+            return $b->match_score <=> $a->match_score;
+        })->values();
     }
 }

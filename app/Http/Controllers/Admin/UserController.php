@@ -42,7 +42,7 @@ class UserController extends Controller
             $query->where('status', $request->status);
         }
 
-        $users = $query->paginate(15)->withQueryString();
+        $users = $query->get();
 
         return view('admin.users.index', compact('users'));
     }
@@ -56,7 +56,7 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
     }
 
     public function verifyEmail(Request $request, User $user)

@@ -54,12 +54,7 @@ class ProfileController extends Controller
     public function updateEducation(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'qualification' => 'required|string|max:100',
-                'field_of_study' => 'nullable|string|max:255',
-                'university' => 'nullable|string|max:255',
-                'graduation_year' => 'nullable|string|max:10',
-            ]);
+           
 
             $user = $request->user();
             $user->update([
@@ -81,13 +76,7 @@ class ProfileController extends Controller
     public function updateCareer(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'employment_type' => 'required|in:employed,self_employed,business',
-                'job_title' => 'nullable|string|max:255',
-                'company' => 'nullable|string|max:255',
-                'monthly_income' => 'nullable|string|max:100',
-                'residential_status' => 'nullable|string|max:100',
-            ]);
+            
 
             $user = $request->user();
             $user->update([
@@ -139,13 +128,7 @@ class ProfileController extends Controller
     public function updateFaith(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'religion' => 'nullable|string|max:100',
-                'community' => 'nullable|string|max:100',
-                'sect' => 'nullable|string|max:100',
-                'mother_tongue' => 'nullable|string|max:100',
-                'other_languages' => 'nullable|array',
-            ]);
+        
 
             $user = $request->user();
             $user->update([
@@ -165,62 +148,71 @@ class ProfileController extends Controller
         }
     }
 
-    public function uploadPhotos(Request $request): JsonResponse
-    {
-        try {
-            $minPhotos = config('pairi_family.min_profile_photos', 3);
+  public function uploadPhotos(Request $request): JsonResponse
+{
+    try {
+        $request->validate([
+            'photos' => 'required',
+            'photos.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'main_index' => 'nullable|integer|min:0',
+        ]);
 
-            $request->validate([
-                'photos' => "required|array|min:{$minPhotos}|max:6",
-                'photos.*' => 'image|mimes:jpeg,png,jpg|max:5120',
-                'main_index' => 'nullable|integer|min:0',
-            ]);
-
-            $user = $request->user();
-            $photos = [];
-
-            foreach ($request->file('photos') as $index => $photo) {
-                $path = $photo->store('profiles/' . $user->id, 'public');
-                $photos[] = [
-                    'path' => $path,
-                    'is_main' => $index === (int) $request->input('main_index', 0),
-                ];
-            }
-
-            $user->update([
-                'photos' => $photos,
-                'profile_step' => max($user->profile_step, 7),
-            ]);
-
-            return $this->success($user, 'Photos uploaded.');
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to upload photos.', $e);
+        $user = $request->user();
+        
+        // Directly get files
+        $uploadedFiles = $request->file('photos');
+        
+        // Ensure it's an array
+        if (!is_array($uploadedFiles)) {
+            $uploadedFiles = [$uploadedFiles];
         }
+
+        if (empty($uploadedFiles)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No photos received. Send files as photos[] in form-data.',
+            ], 422);
+        }
+
+        $photos = [];
+        $mainIndex = (int) $request->input('main_index', 0);
+
+        foreach ($uploadedFiles as $index => $photo) {
+            $path = $photo->store('profiles/' . $user->id, 'public');
+            $photos[] = [
+                'path' => $path,
+                'is_main' => $index === $mainIndex,
+            ];
+        }
+
+        $user->update([
+            'photos' => $photos,
+            'profile_step' => max($user->profile_step, 7),
+        ]);
+
+        return $this->success($user->fresh(), 'Photos uploaded.');
+    } catch (ValidationException $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        return $this->errorResponse('Failed to upload photos.', $e);
+    }
+}
+
+    private function collectUploadedPhotos(Request $request): array
+    {
+        $files = $request->file('photos');
+
+        if (!$files) {
+            return [];
+        }
+
+        return is_array($files) ? array_values(array_filter($files)) : [$files];
     }
 
     public function updateProfile(Request $request): JsonResponse
     {
         try {
-            $request->validate([
-                'name' => 'nullable|string|max:255',
-                'birthday' => 'nullable|date|before:today',
-                'gender' => 'nullable|in:male,female',
-                'bio' => 'nullable|string|max:200',
-                'email' => 'nullable|email|unique:users,email,' . $request->user()->id,
-                'phone' => 'nullable|string|max:20',
-                'city' => 'nullable|string|max:100',
-                'country' => 'nullable|string|max:100',
-                'height' => 'nullable|string|max:50',
-                'mother_tongue' => 'nullable|string|max:100',
-                'other_languages' => 'nullable|array',
-                'marital_status' => 'nullable|string|max:50',
-                'community' => 'nullable|string|max:100',
-                'residential_status' => 'nullable|string|max:100',
-                'interests' => 'nullable|array',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            ]);
+            // 
 
             $user = $request->user();
             $data = $request->only([
@@ -268,7 +260,7 @@ class ProfileController extends Controller
     private function success($user, string $message): JsonResponse
     {
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => $message,
             'user' => UserResource::toPayload($user->fresh()),
         ], 200);

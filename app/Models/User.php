@@ -62,12 +62,12 @@ class User extends Authenticatable
         $photos = $this->photos ?? [];
 
         if (empty($photos)) {
-            return $this->image ? asset($this->image) : null;
+            return $this->image ? media_url($this->image) : null;
         }
 
         $main = collect($photos)->firstWhere('is_main', true) ?? $photos[0];
 
-        return isset($main['path']) ? asset('storage/' . $main['path']) : null;
+        return media_url($main['path'] ?? null);
     }
 
     public function sentInterests(): HasMany
@@ -101,6 +101,18 @@ class User extends Authenticatable
         do {
             $code = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
         } while (self::where('referral_code', $code)->exists());
+
+        return $code;
+    }
+
+    public function ensureReferralCode(): string
+    {
+        if (!empty($this->referral_code)) {
+            return $this->referral_code;
+        }
+
+        $code = self::generateUniqueReferralCode();
+        $this->forceFill(['referral_code' => $code])->save();
 
         return $code;
     }

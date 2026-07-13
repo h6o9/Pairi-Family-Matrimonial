@@ -1,5 +1,4 @@
 <script src="{{ asset('global/js/jquery-3.7.1.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/turbolinks/5.2.0/turbolinks.js"></script>
 <script src="{{ asset('backend/js/popper.min.js') }}"></script>
 <script src="{{ asset('backend/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('backend/js/jquery.nicescroll.min.js') }}"></script>
@@ -20,6 +19,8 @@
 <script src="{{ asset('backend/js/jquery.uploadPreview.min.js') }}"></script>
 <script src="{{ asset('website/js/Font-Awesome.js') }}"></script>
 <script src="{{ asset('backend/js/custom.js') }}?v={{ $setting?->version }}"></script>
+<script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
     @session('message')
@@ -51,16 +52,34 @@
 
 <script>
     $(document).ready(function() {
-        $('.deleteForm').on('click', function() {
+        $(document).on('click', '.deleteForm', function() {
             const url = $(this).data('url');
             $('#deleteForm').attr('action', url);
-
-            $('#deleteModal').modal('show');
         })
 
         $("[name='name'], [name='title']").on('input', function() {
             $("[name='slug']").val(convertToSlug($(this).val()));
         })
+
+        if ($.fn.DataTable) {
+            $('.data-table').each(function() {
+                var $table = $(this);
+                var lastCol = $table.find('thead th').length - 1;
+                $table.DataTable({
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100],
+                    order: [],
+                    columnDefs: [
+                        { orderable: false, searchable: false, targets: lastCol }
+                    ],
+                    language: {
+                        search: '',
+                        searchPlaceholder: 'Search...',
+                        emptyTable: 'No records found.'
+                    }
+                });
+            });
+        }
     })
 
     function convertToSlug(text = '') {

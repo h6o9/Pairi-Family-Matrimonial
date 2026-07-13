@@ -16,7 +16,7 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         $photos = collect($this->photos ?? [])->map(fn ($photo) => [
-            'url' => asset('storage/' . ($photo['path'] ?? '')),
+            'url' => media_url($photo['path'] ?? null),
             'path' => $photo['path'] ?? null,
             'is_main' => (bool) ($photo['is_main'] ?? false),
         ])->values()->all();

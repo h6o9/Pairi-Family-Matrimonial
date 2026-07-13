@@ -13,50 +13,61 @@ class SubscriptionController extends Controller
     public function index()
     {
         $bureauId = Auth::guard('marriage_bureau')->id();
-        $activeSub = MarriageBureauSubscription::where('marriage_bureau_id', $bureauId)->where('status', 'verified')->first();
-        
+
+        $activeSub = MarriageBureauSubscription::with('plan')
+            ->where('marriage_bureau_id', $bureauId)
+            ->where('status', 'verified')
+            ->latest()
+            ->first();
+
+        $pendingSub = MarriageBureauSubscription::with('plan')
+            ->where('marriage_bureau_id', $bureauId)
+            ->where('status', 'paid')
+            ->latest()
+            ->first();
+
         $plans = MarriageBureauSubscriptionPlan::where('status', 'active')->get();
 
-        return view('marriage_bureau.subscription.index', compact('plans', 'activeSub'));
+        return view('marriage_bureau.subscription.index', compact('plans', 'activeSub', 'pendingSub'));
     }
 
     public function store(Request $request)
     {
+        $plan = MarriageBureauSubscriptionPlan::where('status', 'active')->find($request->plan_id);
+
+        if (!$plan) {
+            return back()->with(['message' => 'Selected plan is not available.', 'alert-type' => 'error']);
+        }
+
         $request->validate([
             'plan_id' => 'required|exists:marriage_bureau_subscription_plans,id',
-            'payment_method' => 'required|string',
         ]);
 
-        $plan = MarriageBureauSubscriptionPlan::findOrFail($request->plan_id);
         $bureauId = Auth::guard('marriage_bureau')->id();
 
-        // Check if there's already a pending or active sub
-        $existing = MarriageBureauSubscription::where('marriage_bureau_id', $bureauId)
-            ->whereIn('status', ['paid', 'verified'])
+        $currentVerified = MarriageBureauSubscription::where('marriage_bureau_id', $bureauId)
+            ->where('status', 'verified')
+            ->latest()
             ->first();
 
-        if ($existing && $existing->status === 'verified') {
-            return back()->with(['message' => 'You already have an active subscription.', 'alert-type' => 'error']);
+        if ($currentVerified && (int) $currentVerified->marriage_bureau_subscription_plan_id === (int) $plan->id) {
+            return back()->with(['message' => 'This is already your active plan.', 'alert-type' => 'error']);
         }
 
-        if ($existing && $existing->status === 'paid') {
-            return back()->with(['message' => 'You already have a pending subscription waiting for admin verification.', 'alert-type' => 'error']);
+        // Switching plans: retire the previous active subscription so the
+        // new one becomes the single source of truth for access checks.
+        if ($currentVerified) {
+            $currentVerified->update(['status' => 'replaced']);
         }
-
-        $status = $plan->price > 0 ? 'paid' : 'verified';
 
         MarriageBureauSubscription::create([
             'marriage_bureau_id' => $bureauId,
             'marriage_bureau_subscription_plan_id' => $plan->id,
-            'status' => $status,
-            'payment_screenshot' => null, // Will be updated by Admin
+            'status' => 'verified',
+            'payment_screenshot' => null,
         ]);
 
-        if ($status === 'paid') {
-            return redirect()->route('marriage-bureau.dashboard')->with(['message' => 'Your subscription request has been submitted. Please wait for admin verification.', 'alert-type' => 'success']);
-        }
-
-        return redirect()->route('marriage-bureau.dashboard')->with(['message' => 'Free subscription activated successfully.', 'alert-type' => 'success']);
+        return redirect()->route('marriage-bureau.subscription.index')->with(['message' => 'Plan updated successfully.', 'alert-type' => 'success']);
     }
 
     public function uploadScreenshot(Request $request)

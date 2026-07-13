@@ -12,7 +12,7 @@ class SubscriptionController extends Controller
     {
         try {
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'subscriptions' => Subscription::all(),
             ], 200);
         } catch (\Exception $e) {
@@ -40,7 +40,7 @@ class SubscriptionController extends Controller
             $subscription = Subscription::create($data);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Subscription created successfully',
                 'subscription' => $subscription,
             ], 201);
@@ -60,7 +60,7 @@ class SubscriptionController extends Controller
         try {
             $subscription = Subscription::findOrFail($id);
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'subscription' => $subscription,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -92,7 +92,7 @@ class SubscriptionController extends Controller
             $subscription->update($data);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Subscription updated successfully',
                 'subscription' => $subscription,
             ], 200);
@@ -116,7 +116,7 @@ class SubscriptionController extends Controller
             $subscription->delete();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Subscription deleted successfully',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

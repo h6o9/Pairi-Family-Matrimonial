@@ -62,7 +62,7 @@ class AuthenticatedSessionController extends Controller
                         session(['admin_login_time' => now()]);
                         session(['admin_last_activity' => now()]);
                         
-                        $notification = __('Login successfully.');
+                        $notification = __('Logged in successfully.');
                         $notification = ['message' => $notification, 'alert-type' => 'success'];
 
                         $intendedUrl = session()->get('url.intended');
@@ -103,7 +103,7 @@ class AuthenticatedSessionController extends Controller
         
         Auth::guard('admin')->logout();
 
-        $notification = __('Logout successfully.');
+        $notification = __('Logged out successfully.');
         $notification = ['message' => $notification, 'alert-type' => 'success'];
 
         return redirect()->route('admin.login')->with($notification);

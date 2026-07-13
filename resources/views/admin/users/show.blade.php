@@ -66,11 +66,11 @@
                                     </div>
 
                     <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#personal">Personal</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#education">Education & Career</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#faith">Faith & Physical</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#photos">Photos</a></li>
-                        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#subscriptions">Subscriptions</a></li>
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#personal">Personal</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#education">Education & Career</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#faith">Faith & Physical</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#photos">Photos</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#subscriptions">Subscriptions</a></li>
                     </ul>
 
                     <div class="tab-content pt-3">
@@ -121,7 +121,7 @@
                             <div class="row">
                                 @foreach($user->photos as $photo)
                                 <div class="col-md-3 mb-3 text-center">
-                                    <img src="{{ asset('storage/' . ($photo['path'] ?? '')) }}" class="img-fluid rounded border mb-1" alt="Photo">
+                                    <img src="{{ asset('uploads/store/' . ($photo['path'] ?? '')) }}" class="img-fluid rounded border mb-1" alt="Photo">
                                     @if($photo['is_main'] ?? false)
                                         <span class="badge badge-success">Main Photo</span>
                                                     @endif
@@ -169,12 +169,12 @@
                                             <td>{{ $sub->created_at->format('d M Y') }}</td>
                                             <td>
                                                 @if($sub->status == 'paid')
-                                                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#verifySubscriptionModal" data-sub-id="{{ $sub->id }}">
+                                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#verifySubscriptionModal" data-sub-id="{{ $sub->id }}">
                                                         Verify Payment
                                                     </button>
                                                 @endif
                                                 @if($sub->payment_screenshot)
-                                                    <a href="{{ asset('storage/' . $sub->payment_screenshot) }}" target="_blank" class="btn btn-sm btn-info">View Screenshot</a>
+                                                    <a href="{{ asset('uploads/store/' . $sub->payment_screenshot) }}" target="_blank" class="btn btn-sm btn-info">View Screenshot</a>
                                                 @endif
                                             </td>
                                         </tr>
@@ -204,7 +204,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="verifySubscriptionModalLabel">Verify Subscription Payment</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -215,7 +215,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Verify Payment</button>
                 </div>
             </div>

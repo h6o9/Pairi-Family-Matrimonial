@@ -61,6 +61,6 @@ class SubscriptionController extends Controller
     public function destroy(Subscription $subscription)
     {
         $subscription->delete();
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription deleted successfully.');
+        return redirect()->route('admin.subscriptions.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
     }
 }

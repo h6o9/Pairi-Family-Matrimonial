@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'base_url' => env('APP_BASE_URL', env('APP_URL', 'https://ranglerz.click/piyarifamily')),
+
     'countries' => [
         'Pakistan', 'India', 'Bangladesh', 'Sri Lanka', 'Nepal',
         'USA', 'UK', 'Canada', 'Australia', 'UAE', 'Singapore', 'Malaysia',
@@ -60,4 +62,5 @@ return [
 
     'otp_resend_seconds' => 45,
     'min_profile_photos' => 3,
+    'new_profile_days' => 3,
 ];

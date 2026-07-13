@@ -16,7 +16,7 @@ class SubscriptionController extends Controller
             $plans = Subscription::where('status', 'active')->orderBy('price')->get();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'plans' => $plans->map(fn ($plan) => $this->formatPlan($plan)),
                 'comparison' => $this->comparisonMatrix($plans),
             ], 200);
@@ -42,7 +42,7 @@ class SubscriptionController extends Controller
                 $freePlan = Subscription::where('type', 'Free')->where('status', 'active')->first();
 
                 return response()->json([
-                    'success' => true,
+                    'success' => 200,
                     'has_subscription' => false,
                     'plan' => $freePlan ? $this->formatPlan($freePlan) : null,
                     'status' => 'free',
@@ -52,7 +52,7 @@ class SubscriptionController extends Controller
             }
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'has_subscription' => true,
                 'subscription' => [
                     'id' => $subscription->id,
@@ -125,7 +125,7 @@ class SubscriptionController extends Controller
             ]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => $isFree
                     ? 'Free plan activated successfully.'
                     : 'Subscription request submitted. Please upload payment screenshot.',
@@ -165,9 +165,9 @@ class SubscriptionController extends Controller
             $subscription->update(['payment_screenshot' => $path]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Payment screenshot uploaded. Please wait for admin verification.',
-                'payment_screenshot' => asset('storage/' . $path),
+                'payment_screenshot' => media_url($path),
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Pending subscription not found.'], 404);
@@ -203,7 +203,7 @@ class SubscriptionController extends Controller
             $subscription->update(['cancelled_at' => now()]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Subscription cancelled successfully.',
                 'cancelled_at' => $subscription->cancelled_at->toIso8601String(),
             ], 200);

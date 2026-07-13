@@ -20,10 +20,6 @@
             <p class="text-muted mb-0">Admin Panel</p>
         </div>
 
-        @if(session('message'))
-            <div class="alert alert-{{ session('alert-type') === 'error' ? 'danger' : 'success' }}">{{ session('message') }}</div>
-        @endif
-
         <form action="{{ route('admin.forget-password') }}" method="POST">
             @csrf
             <div class="form-group">

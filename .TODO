@@ -1,0 +1,398 @@
+Testing:
+    ✔ Install Project @done(26-02-04 12:51)
+    ✔ Test Frontend Website @done(26-02-04 18:18)
+    ✔ Join as seller @done(26-02-05 10:50)
+    ✔ Update laravel 11 @done(26-02-05 13:03)
+    ✔ Update laravel 12 @done(26-02-05 13:03)
+    Admin Panel:
+        ✔ Login @done(26-02-04 18:53)
+            ✔ Fix issue @done(26-02-04 18:53)
+        ✔ Dashboard @done(26-02-04 19:48)
+            ✔ Fix issue @done(26-02-04 19:52)
+        ✔ Category @done(26-02-04 19:59)
+            ✔ Create @done(26-02-04 19:53)
+            ✔ Read @done(26-02-04 19:55)
+            ✔ Update @done(26-02-04 19:55)
+            ✔ Delete @done(26-02-04 19:59)
+        Brand:
+            ✔ Create @done(26-02-04 20:24)
+            ✔ Read @done(26-02-04 20:40)
+            ✔ Update @done(26-02-04 20:40)
+            ✔ Delete @done(26-02-04 20:40)
+        Attribute:
+            ✔ Create @done(26-02-04 20:48)
+            ✔ Read @done(26-02-04 20:48)
+            ✔ Update @done(26-02-04 20:48)
+            ✔ Delete @done(26-02-04 20:48)
+        Attribute Value:
+            ✔ Create @done(26-02-04 20:48)
+            ✔ Read @done(26-02-04 20:48)
+            ✔ Update @done(26-02-04 20:48)
+            ✔ Delete @done(26-02-04 20:48)
+        Label:
+            ✔ Create @done(26-02-04 20:51)
+            ✔ Read @done(26-02-04 20:51)
+            ✔ Update @done(26-02-04 20:52)
+            ✔ Delete @done(26-02-04 20:52)
+        Unit:
+            ✔ Create @done(26-02-04 20:54)
+            ✔ Read @done(26-02-04 20:54)
+            ✔ Update @done(26-02-04 20:54)
+            ✔ Delete @done(26-02-04 20:54)
+        Tag:
+            ✔ Create @done(26-02-04 21:04)
+            ✔ Read @done(26-02-04 21:04)
+            ✔ Update @done(26-02-04 21:04)
+            ✔ Delete @done(26-02-04 21:04)
+        Product:
+            ✔ Create @done(26-02-05 11:28)
+            ✔ Read @done(26-02-05 11:28)
+            ✔ Update @done(26-02-05 11:28)
+            ✔ Delete @done(26-02-05 11:28)
+        Seller Product:
+            ✔ View @done(26-02-05 13:11)
+        Manage Order:
+
+        Coupon:
+            ✔ Create @done(26-02-05 13:10)
+            ✔ Read @done(26-02-05 13:10)
+            ✔ Update @done(26-02-05 13:10)
+            ✔ Delete @done(26-02-05 13:10)
+        Location:
+            ✔ Country @done(26-02-05 15:27)
+            ✔ State @done(26-02-05 15:27)
+            ✔ City @done(26-02-05 15:27)
+        Shipping Rule:
+            ✔ CRUD Test done @done(26-02-05 15:27)
+        Manage Customer:
+            ✔ Check updated and view @done(26-02-05 15:27)
+        All Seller:
+            ✔ View @done(26-02-05 15:27)
+        Pending Seller:
+            ✔ View Done @done(26-02-05 15:29)
+        KYC:
+            ✔ CRUD done @done(26-02-05 15:33)
+            ✔ KYC Applcation update @done(26-02-05 15:34)
+        Payment Withdraw:
+            ✔ View @done(26-02-05 15:35)
+            ✔ Payment Methods CRUD @done(26-02-05 15:35)
+        Manage Theme:
+            ✔ Theme change @done(26-02-05 15:57)
+            ✔ Theme Setting @done(26-02-05 16:06)
+            ✔ Theme sections @done(26-02-05 16:10)
+        Manage Pages:
+            ✔ Check updating images and contents @done(26-02-05 16:12)
+
+        ✔ Blog Category @done(26-02-05 16:58)
+        ✔ Blog CRUD @done(26-02-08 09:49)
+        ✔ FAQ CRUD @done(26-02-08 09:52)
+        ✔ Testimonal CRUD @done(26-02-08 09:54)
+
+        ✔ General Setting Test @done(26-02-08 11:49)
+        ✔ Ecom setup @done(26-02-08 11:51)
+        ✔ Credentials @done(26-02-08 11:51)
+        ✔ Email Config @done(26-02-08 11:51)
+        ✔ Language @done(26-02-08 11:51)
+        ✔ Seo @done(26-02-08 11:55)
+        ✔ Sitemap @done(26-02-08 11:55)
+        ✔ Payment Gatways @done(26-02-08 12:17)
+        ✔ Currency @done(26-02-08 12:18)
+        ✔ Tax CRUD @done(26-02-08 12:19)
+        ✔ Custom Code @done(26-02-08 12:26)
+        ✔ Clearn Cache @done(26-02-08 12:27)
+        ✔ Clear database @done(26-02-08 12:27)
+
+        Role And permission:
+        ✔ Admin Creation @done(26-02-08 13:19)
+        ✔ Permission test basic @done(26-02-08 13:19)
+
+    Seller Panel:
+        ✔ All pages and cruds tested @done(26-02-09 15:25)
+    User Panel:
+        ✔ All Pages tested @done(26-02-09 15:33)
+    ✔ Join As seller @done(26-02-09 16:12)
+
+Bug Fix:
+    ✔ remove all ->get and add pagination @done(25-08-24 10:56)
+
+New Features:
+    ✔ Custom Error Pages @done(25-08-03 10:34)
+    ✔ Add Google Tag Manage @done(25-08-05 09:48)
+    ✔ Add Facebook Pixel @done(25-08-05 11:21)
+
+Test Frontend Website:
+    ✔ Home 1 @started(25-07-29 14:30) @done(25-07-29 15:53) @lasted(1h23m19s)
+    ✔ Home 2 @done(25-07-29 15:53)
+    ✔ Home 3 @started(25-07-29 15:53) @done(25-07-29 16:01) @lasted(8m23s)
+    ✔ Home 4 @started(25-07-29 16:18) @done(25-07-29 16:20) @lasted(2m59s)
+    ✔ Product Single Modal View @started(25-07-30 12:52) @done(25-07-30 17:59) @lasted(5h7m58s)
+    ✔ Product and Product Details Page @started(25-07-31 09:20) @done(25-07-31 15:30) @lasted(6h10m35s)
+    ✔ Shops @started(25-07-31 15:30) @done(25-07-31 15:46) @lasted(16m11s)
+    ✔ Shop Details and Filters @started(25-07-31 15:46) @done(25-07-31 15:46) @lasted(22s)
+    ✔ Contact Us @started(25-07-31 16:54) @done(25-07-31 17:17) @lasted(23m51s)
+    ✔ About Us @done(25-08-03 10:04)
+    ✔ Custom Pages @done(25-08-03 15:01)
+    ✔ Faq @done(25-08-03 11:37)
+    ✔ Join As Seller @done(25-08-03 11:49)
+    ✔ Brands @done(25-08-03 11:50)
+    ✔ Blogs @started(25-08-03 11:51) @done(25-08-03 11:51) @lasted(50s)
+    ✔ Track Order @done(25-08-03 12:03)
+    ✔ Flash Deal @done(25-08-03 12:47)
+    ✔ Gift Cards @done(25-08-03 12:47)
+    ✔ Newsletter Sub @done(25-08-03 12:49)
+    ✔ Cart @done(25-08-03 13:13)
+    ✔ Checkout @done(25-08-04 10:46)
+    ✔ Payment Methods @done(25-08-07 15:09)
+        ✔ stripe @done(25-08-03 15:34)
+        ✔ paypal @done(25-08-03 15:26)
+        ✔ Bank @done(25-08-03 17:20)
+        ✔ Hand Cash @done(25-08-03 17:20)
+        ✔ rezorpay (rupe) @done(25-08-03 15:19)
+        ✔ flutterwave @started(25-08-03 17:20) @done(25-08-04 12:43) @lasted(19h23m40s)
+        ✔ mollie @started(25-08-03 17:20) @done(25-08-04 12:55) @lasted(19h35m22s)
+        ✘ instamojo @started(25-08-03 17:20) @cancelled(25-08-07 15:09) @wasted(3d21h49m15s)
+        ✔ paystack @done(25-08-03 16:22)
+        ✔ sslcommorze @started(25-08-04 12:58) @done(25-08-04 13:24) @lasted(26m39s)
+        ✔ crypto @started(25-08-04 13:24) @done(25-08-04 13:49) @lasted(25m34s)
+    ✔ Fix APP Boot time @done(25-08-04 11:36)
+
+User Test:
+    ✔ Login @done(25-08-05 11:34)
+    ✔ Google Login @done(25-08-05 13:59)
+    ✔ Register @started(25-08-05 12:29) @done(25-08-05 12:29) @lasted(5s)
+    ✔ Forgot Password @done(25-08-05 12:29)
+    ✔ Dashboard Profile @done(25-08-05 11:35)
+    ✔ Edit Profile @done(25-08-05 11:35)
+    ✔ Orders @done(25-08-05 13:39)
+    ✔ wishlist @done(25-08-05 13:42)
+    ✔ reviews @done(25-08-05 13:39)
+    ✔ Addresess @done(25-08-05 13:22)
+    ✔ Change Password @done(25-08-05 13:28)
+    ✔ Lougout @done(25-08-05 15:52)
+
+Testing Seller:
+    Auth:
+        ✔ Registation @done(25-07-24 16:23)
+        ✔ Login @done(25-07-24 16:23)
+        ✔ Forgot Password @done(25-07-24 16:24)
+    Dashboard:
+        ✔ Filters @done(25-07-27 09:31)
+        ✔ Notifications @started(25-07-27 09:31) @done(25-07-27 09:57) @lasted(26m6s)
+    Product List:
+        ✔ working @started(25-07-27 10:14) @done(25-07-27 12:37) @lasted(2h23m4s)
+        ✔ Product Varient @started(25-07-27 12:37) @done(25-07-27 13:12) @lasted(35m4s)
+    ✔ Product Gallery @done(25-07-27 13:07)
+    ✔ Product Reviews @done(25-07-27 13:12)
+    ✔ Price: @done(25-07-27 13:13)
+    ✔ Inventory: @done(25-07-27 13:14)
+    ✔ Orders: @done(25-07-27 14:44)
+    ✔ KYC @done(25-07-27 15:04)
+    ✔ Withdraw @done(25-07-27 15:30)
+    ✔ Shop Profile: @done(25-07-27 15:32)
+    User Profile:
+        ✔ view @started(25-07-27 09::57) @done(25-07-27 10:13) @lasted(16m56s)
+
+Testing Admin:
+    Products:
+        ✔ Product View @done(25-07-16 11:38)
+        ✔ Product Add @done(25-07-16 11:38)
+        ✔ Product Edit @done(25-07-16 11:38)
+        ✔ Product Delete @done(25-07-16 11:38)
+        ✔ Product Index filters @done(25-07-17 17:26)
+
+    Product Price:
+        ✔ View @done(25-07-17 17:28)
+        ✔ Filter @done(25-07-17 17:28)
+        ✔ Update @done(25-07-17 17:28)
+
+    ✔ Product Inventory: @done(25-07-17 17:30)
+        ✔ View @done(25-07-17 17:30)
+        ✔ Filter @done(25-07-17 17:30)
+        ✔ Update @done(25-07-17 17:30)
+
+    ✔ Return Policy: @done(25-07-17 17:30)
+        ✔ View @done(25-07-17 17:30)
+        ✔ Delete @done(25-07-17 17:30)
+
+    Category:
+        ✔ View @done(25-07-16 11:42)
+        ✔ Add @done(25-07-16 11:42)
+        ✔ Edit @done(25-07-16 11:42)
+        ✔ Delete @done(25-07-16 11:42)
+        ✔ Index Filter @done(25-07-17 17:31)
+
+    Brand:
+        ✔ View @done(25-07-16 11:42)
+        ✔ Add @done(25-07-16 11:42)
+        ✔ Edit @done(25-07-16 11:42)
+        ✔ Delete @done(25-07-16 11:42)
+        ✔ Index Filter @done(25-07-17 17:32)
+
+    Attribute:
+        ✔ View @done(25-07-16 11:42)
+        ✔ Add @done(25-07-16 11:42)
+        ✔ Edit @done(25-07-16 11:42)
+        ✔ Delete @done(25-07-16 11:42)
+
+    Label:
+        ✔ View @done(25-07-16 11:42)
+        ✔ Add @done(25-07-16 11:42)
+        ✔ Edit @done(25-07-16 11:42)
+        ✔ Delete @done(25-07-16 11:42)
+
+    Unit:
+        ✔ View @done(25-07-16 11:42)
+        ✔ Add @done(25-07-16 11:42)
+        ✔ Edit @done(25-07-16 11:42)
+        ✔ Delete @done(25-07-16 11:42)
+
+    Tags:
+        ✔ View @done(25-07-16 11:43)
+        ✔ Add @done(25-07-16 11:43)
+        ✔ Edit @done(25-07-16 11:43)
+        ✔ Delete @done(25-07-16 11:43)
+        ✔ Index Filter @done(25-07-21 10:05)
+
+    Seller Products:
+        ✔ Approve @done(25-07-17 17:33)
+        ✔ Filters @done(25-07-17 17:33)
+
+    Orders:
+        ✔ View @started(25-07-17 16:26) @done(25-07-17 16:30) @lasted(4m59s)
+        ✔ Details @started(25-07-17 16:30) @done(25-07-17 16:30) @lasted(59s)
+        ✔ Status Updates @started(25-07-17 16:30) @done(25-07-17 16:30) @lasted(59s)
+        ✔ Delete @started(25-07-17 16:30) @done(25-07-17 16:30) @lasted(59s)
+
+    Coupon:
+        ✔ View @started(25-07-16 11:43) @done(25-07-16 11:45) @lasted(2m11s)
+        ✔ Add @started(25-07-16 11:43) @done(25-07-16 11:45) @lasted(2m11s)
+        ✔ Edit @started(25-07-16 11:43) @done(25-07-16 11:45) @lasted(2m11s)
+        ✔ Delete @started(25-07-16 11:43) @done(25-07-16 11:45) @lasted(2m11s)
+        ✔ Check Coupon History @done(25-08-05 15:54)
+
+    Location:
+        Country:
+            ✔ View @started(25-07-16 11:47) @done(25-07-16 11:48) @lasted(1m47s)
+            ✔ Add @started(25-07-16 11:48) @done(25-07-16 11:50) @lasted(2m20s)
+            ✔ Edit @started(25-07-16 11:50) @done(25-07-16 11:53) @lasted(3m47s)
+            ✔ Delete @started(25-07-16 11:48) @done(25-07-16 11:48) @lasted(38s)
+        State:
+            ✔ View @started(25-07-16 11:53) @done(25-07-16 11:54) @lasted(1m38s)
+            ✔ Add @started(25-07-16 11:54) @done(25-07-16 11:56) @lasted(2m37s)
+            ✔ Edit @started(25-07-16 11:56) @done(25-07-16 11:57) @lasted(1m36s)
+            ✔ Delete @started(25-07-16 11:57) @done(25-07-16 11:57) @lasted(58s)
+        City:
+            ✔ View @started(25-07-16 11:58) @done(25-07-16 11:59) @lasted(1m4s)
+            ✔ Add @started(25-07-16 11:59) @done(25-07-16 12:00) @lasted(1m46s)
+            ✔ Edit @started(25-07-16 12:00) @done(25-07-16 12:03) @lasted(3m37s)
+            ✔ Delete @started(25-07-16 12:03) @done(25-07-16 12:03) @lasted(45s)
+
+    Shipping Rules:
+        ✔ Settings @started(25-07-16 12:06) @done(25-07-16 12:06) @lasted(29s)
+            Rules:
+                ✔ View @started(25-07-16 12:06) @done(25-07-16 12:06) @lasted(40s)
+                ✔ Add @started(25-07-16 12:07) @done(25-07-16 12:11) @lasted(4m27s)
+                ✔ Edit @started(25-07-16 12:09) @done(25-07-16 12:14) @lasted(5m33s)
+                ✔ Delete @started(25-07-16 12:14) @done(25-07-16 12:14) @lasted(55s)
+
+    Customers:
+        ✔ View @done(25-07-17 17:23)
+        ✔ Update @done(25-07-17 17:23)
+        ✔ Show @done(25-07-17 17:23)
+        ✔ Delete @done(25-07-17 17:23)
+
+    All Sellers:
+        ✔ View @done(25-07-17 17:16)
+        ✔ Edit @done(25-07-17 17:16)
+        ✔ Pending @done(25-07-17 17:16)
+        ✔ Delete @done(25-07-17 17:16)
+
+    Manage KYC:
+        ✔ Type @done(25-07-17 17:10)
+        ✔ Verify KYC logic @done(25-07-17 17:12)
+
+    Withdraw Payment:
+        ✔ Test withdrawal requests @done(25-07-17 17:08)
+        ✔ Withdrew methods @done(25-07-17 17:09)
+
+    Seller Wallets:
+        ✔ update status, check index and filters @started(25-07-17 16:44) @done(25-07-17 16:49) @lasted(5m32s)
+
+    Manage Theme:
+        ✔ Change Theme @started(25-07-16 16:58) @done(25-07-16 17:36) @lasted(38m48s)
+        ✔ Update Contents @done(25-07-20 18:16)
+        ✔ CHeck Image Upload @done(25-07-20 18:16)
+
+    Manage Pages:
+        ✔ Update @started(25-07-16 16:49) @done(25-07-16 16:55) @lasted(6m18s)
+
+    Menu Builder:
+        ✔ View @started(25-07-16 16:42) @done(25-07-16 16:46) @lasted(4m16s)
+        ✔ Update @done(25-07-16 16:47)
+
+    Custom Pages:
+        ✔ View @started(25-07-16 16:38) @done(25-07-16 16:41) @lasted(3m21s)
+        ✔ Create @started(25-07-16 16:41) @done(25-07-16 16:41) @lasted(18s)
+        ✔ Edit @started(25-07-16 16:41) @done(25-07-16 16:41) @lasted(57s)
+        ✔ Delete @started(25-07-16 16:42) @done(25-07-16 16:42) @lasted(17s)
+
+    Manage Blogs:
+        Category:
+            ✔ View @started(25-07-16 12:29) @done(25-07-16 12:31) @lasted(2m1s)
+            ✔ Add @started(25-07-16 12:30) @done(25-07-16 12:31) @lasted(1m2s)
+            ✔ Edit @started(25-07-16 12:30) @done(25-07-16 12:31) @lasted(1m37s)
+            ✔ Delete @started(25-07-16 12:31) @done(25-07-16 12:31) @lasted(47s)
+        Blogs:
+            ✔ View @started(25-07-16 13:25) @done(25-07-16 13:25) @lasted(56s)
+            ✔ Add @started(25-07-16 12:32) @done(25-07-16 13:26) @lasted(54m22s)
+            ✔ Edit @started(25-07-16 13:26) @done(25-07-16 13:26) @lasted(50s)
+            ✔ Delete blogs @started(25-07-16 13:26) @done(25-07-16 13:27) @lasted(1m3s)
+        Comments:
+            ☐ View
+
+    FAQ:
+        ✔ View @started(25-07-16 13:27) @done(25-07-16 13:27) @lasted(59s)
+        ✔ Create @started(25-07-16 13:28) @done(25-07-16 13:28) @lasted(15s)
+        ✔ Edit @started(25-07-16 13:28) @done(25-07-16 13:29) @lasted(1m24s)
+        ✔ Delete @started(25-07-16 13:29) @done(25-07-16 13:29) @lasted(53s)
+
+    Settings:
+        ✔ General Settings @started(25-07-20 10:40) @done(25-07-20 10:53) @lasted(13m17s)
+        ✔ Ecom Settings @started(25-07-20 10:53) @done(25-07-20 10:54) @lasted(1m29s)
+        ✔ Credential Settings @started(25-07-20 10:54) @done(25-07-20 11:04) @lasted(10m33s)
+        ✔ Email Config @started(25-07-20 11:04) @done(25-07-20 11:08) @lasted(4m38s)
+        ✔ Manage Language @started(25-07-20 11:08) @done(25-07-20 11:24) @lasted(16m17s)
+        ✔ Seo @done(25-07-20 15:28)
+        ✔ Sitemap @done(25-07-20 15:55)
+        ✔ Custom Code @done(25-07-20 16:31)
+        ✔ Clear Cache @done(25-07-20 17:31)
+        ✔ Databse CLear @done(25-07-20 17:31)
+        ✔ Payment Gateways @started(25-07-20 17:32) @done(25-07-20 18:10) @lasted(38m53s)
+        ✔ Multi Currency @done(25-07-20 18:11)
+        ✔ Tax @done(25-07-20 18:11)
+        ✔ Admin & Role @done(25-07-20 18:12)
+        ✔ Notifications @done(25-07-20 18:13)
+        ✔ Admin Profile & Pass Change @done(25-07-20 18:13)
+
+    Newsletter:
+        ✔ Subscribe List @done(25-07-16 16:37)
+        ✔ Mail Subscribers @done(25-07-16 16:37)
+
+    Testimonial:
+        ✔ View @started(25-07-16 16:14) @done(25-07-16 16:15) @lasted(1m59s)
+        ✔ Create @started(25-07-16 16:14) @done(25-07-16 16:14) @lasted(37s)
+        ✔ Edit @started(25-07-16 16:15) @done(25-07-16 16:15) @lasted(40s)
+        ✔ Delete @started(25-07-16 16:15) @done(25-07-16 16:15) @lasted(56s)
+
+    Contact Message:
+        ✔ View @started(25-07-16 16:17) @done(25-07-16 16:17) @lasted(57s)
+        ✔ Update Contact email @started(25-07-16 16:17) @done(25-07-16 16:17) @lasted(16s)
+        ✔ Delete @started(25-07-16 16:18) @done(25-07-16 16:18) @lasted(13s)
+
+    Archive:
+        ✔ Nothing here yet—but it will be.
+
+Script Issues:
+    ✔ Fix Sticky Menu, it's not dynamic @started(25-07-17 10:55) @done(25-07-17 12:56) @lasted(2h1m45s)
+    ✔ Convert images to webp @started(25-07-17 9:08) @done(25-07-17 10:55) @lasted(1h47m31s)
+    ✔ Add Guest chekout @done(25-07-29 12:36)

@@ -25,7 +25,10 @@ class AuthController extends Controller
         if (Auth::guard('marriage_bureau')->attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended($this->postLoginRedirect());
+            return redirect()->intended($this->postLoginRedirect())->with([
+                'message' => 'Logged in successfully.',
+                'alert-type' => 'success',
+            ]);
         }
 
         return back()->withErrors([
@@ -59,11 +62,12 @@ class AuthController extends Controller
             $data['image'] = file_upload(file: $request->file('image'), path: 'uploads/marriage-bureau/');
         }
 
-        $bureau = MarriageBureau::create($data);
+        MarriageBureau::create($data);
 
-        Auth::guard('marriage_bureau')->login($bureau);
-
-        return redirect()->route('marriage-bureau.subscription.index');
+        return redirect()->route('marriage-bureau.login')->with([
+            'message' => 'Registration successful. Please login to continue.',
+            'alert-type' => 'success',
+        ]);
     }
 
     private function postLoginRedirect(): string
@@ -83,6 +87,9 @@ class AuthController extends Controller
         Auth::guard('marriage_bureau')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('marriage-bureau.login');
+        return redirect()->route('marriage-bureau.login')->with([
+            'message' => 'Logged out successfully.',
+            'alert-type' => 'success',
+        ]);
     }
 }

@@ -10,7 +10,7 @@ class ProfileDetailResource extends JsonResource
     public function toArray(Request $request): array
     {
         $photos = collect($this->photos ?? [])->map(fn ($photo) => [
-            'url' => asset('storage/' . ($photo['path'] ?? '')),
+            'url' => media_url($photo['path'] ?? null),
             'is_main' => (bool) ($photo['is_main'] ?? false),
         ])->values()->all();
 
@@ -27,6 +27,7 @@ class ProfileDetailResource extends JsonResource
             'phone_verified' => (bool) $this->phone_verified,
             'bio' => $this->bio,
             'qualification' => $this->qualification,
+            'education' => $this->qualification,
             'profession' => $this->job_title,
             'job_title' => $this->job_title,
             'company' => $this->company,
@@ -50,8 +51,10 @@ class ProfileDetailResource extends JsonResource
             'physical_disability' => (bool) $this->physical_disability,
             'gender' => $this->gender,
             'match_score' => (int) ($this->match_score ?? 0),
-            'is_new' => $this->created_at?->gte(now()->subDays(30)) ?? false,
+            'is_new' => $this->created_at?->gte(now()->subDays(config('pairi_family.new_profile_days', 3))) ?? false,
             'interest_sent' => (bool) ($this->interest_sent ?? false),
+            'interest_received' => (bool) ($this->interest_received ?? false),
+            'mutual_match' => (bool) ($this->mutual_match ?? false),
         ];
     }
 }

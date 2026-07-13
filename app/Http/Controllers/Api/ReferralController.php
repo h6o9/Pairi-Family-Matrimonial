@@ -6,24 +6,87 @@ use App\Http\Controllers\Controller;
 use App\Models\RewardRedemption;
 use App\Models\Subscription;
 use App\Models\SystemSetting;
+use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ReferralController extends Controller
 {
+    public function link(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $referralCode = $user->ensureReferralCode();
+            $rewardPerRegistration = (int) SystemSetting::getVal('invite_reward_points', 50);
+
+            return response()->json([
+                'success' => 200,
+                'referral_code' => $referralCode,
+                'referral_link' => referral_link($referralCode),
+                'reward_per_registration' => $rewardPerRegistration,
+                'message' => 'Share this link. When someone registers and verifies email using your code, you earn reward points.',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate referral link',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function resolve(string $referralCode): JsonResponse
+    {
+        try {
+            if (!preg_match('/^[A-Z0-9]{8}$/', $referralCode)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid referral link.',
+                ], 404);
+            }
+
+            $referrer = User::where('referral_code', $referralCode)->first();
+
+            if (!$referrer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Referral link not found.',
+                ], 404);
+            }
+
+            $rewardPerRegistration = (int) SystemSetting::getVal('invite_reward_points', 50);
+
+            return response()->json([
+                'success' => 200,
+                'referral_code' => $referralCode,
+                'referral_link' => referral_link($referralCode),
+                'referrer_name' => $referrer->name,
+                'reward_per_registration' => $rewardPerRegistration,
+                'register_hint' => 'Send referral_code with POST /api/register, then verify OTP.',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to resolve referral link',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
     public function stats(Request $request): JsonResponse
     {
         try {
             $user = $request->user();
+            $referralCode = $user->ensureReferralCode();
             $totalRegistered = $user->referrals()->count();
             $rewardPoints = $user->reward_points;
             $rewardPerRegistration = (int) SystemSetting::getVal('invite_reward_points', 50);
 
             return response()->json([
-                'success' => true,
-                'referral_code' => $user->referral_code,
-                'referral_link' => url('/register?ref=' . $user->referral_code),
+                'success' => 200,
+                'referral_code' => $referralCode,
+                'referral_link' => referral_link($referralCode),
                 'total_registered' => $totalRegistered,
                 'reward_points' => $rewardPoints,
                 'reward_per_registration' => $rewardPerRegistration,
@@ -45,7 +108,7 @@ class ReferralController extends Controller
             $history = $user->referrals()->with('referredUser:id,name,image,photos')->latest()->get();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'history' => $history->map(function ($referral) {
                     return [
                         'id' => $referral->id,
@@ -74,7 +137,7 @@ class ReferralController extends Controller
             $catalog = $this->rewardCatalog();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'total_points' => $user->reward_points,
                 'rewards' => collect($catalog)->map(function ($item) use ($user) {
                     return array_merge($item, [
@@ -147,7 +210,7 @@ class ReferralController extends Controller
             ]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Reward redeemed successfully.',
                 'remaining_points' => $user->fresh()->reward_points,
                 'meta' => $meta,

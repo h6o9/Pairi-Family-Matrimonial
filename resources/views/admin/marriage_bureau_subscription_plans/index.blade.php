@@ -12,7 +12,11 @@
         </div>
 
         <div class="section-body">
+            @if($plans->isEmpty())
             <a href="{{ route('admin.marriage-bureau-subscriptions.create') }}" class="btn btn-primary mb-4"><i class="fas fa-plus"></i> Create New Plan</a>
+            @else
+            <p class="text-muted">Only one subscription plan is supported. Edit it below to change what marriage bureaus see.</p>
+            @endif
             
             @if($errors->any())
                 <div class="alert alert-danger">
@@ -27,10 +31,10 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped data-table" id="plansTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Price</th>
                                     <th>Status</th>
@@ -38,9 +42,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($plans as $plan)
+                                @foreach($plans as $plan)
                                 <tr>
-                                    <td>{{ $plan->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $plan->name }}</td>
                                     <td>PKR {{ number_format($plan->price) }}</td>
                                     <td>
@@ -52,25 +56,17 @@
                                     </td>
                                     <td>
                                         <a href="{{ route('admin.marriage-bureau-subscriptions.edit', $plan->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>
-                                        <form action="{{ route('admin.marriage-bureau-subscriptions.destroy', $plan->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></button>
-                                        </form>
+                                        <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.marriage-bureau-subscriptions.destroy', $plan->id) }}" title="Delete" />
                                     </td>
                                 </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-danger">No subscription plans found.</td>
-                                </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                    {{ $plans->links() }}
                 </div>
             </div>
         </div>
     </section>
 </div>
+<x-admin.delete-modal />
 @stop

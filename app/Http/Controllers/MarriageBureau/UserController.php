@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         $bureauId = Auth::guard('marriage_bureau')->id();
-        $users = User::where('marriage_bureau_id', $bureauId)->latest()->paginate(15);
+        $users = User::where('marriage_bureau_id', $bureauId)->latest()->get();
         return view('marriage_bureau.users.index', compact('users'));
     }
 
@@ -24,54 +24,149 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'phone' => 'nullable|string',
-            'gender' => 'required|in:male,female,other',
-            'birthday' => 'nullable|date',
-            'country' => 'nullable|string',
-            'city' => 'nullable|string',
-        ]);
+        $validated = $this->validatedData($request, true);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['marriage_bureau_id'] = Auth::guard('marriage_bureau')->id();
-        
-        User::create($validated);
+
+        // Profiles created by a marriage bureau are display-only: they must never
+        // be able to log in through the app, but should behave like a fully
+        // completed & verified profile so they surface in matches/search.
+        $validated['status'] = 'active';
+        $validated['is_verified'] = true;
+        $validated['email_verified_at'] = now();
+        $validated['profile_completed'] = true;
+        $validated['profile_step'] = 8;
+        $validated['terms_accepted_at'] = now();
+
+        $user = User::create($validated);
+
+        if ($request->hasFile('photo')) {
+            $this->storePhoto($request, $user);
+        }
 
         return redirect()->route('marriage-bureau.users.index')->with(['message' => 'User created successfully.', 'alert-type' => 'success']);
     }
 
+    public function show(User $user)
+    {
+        $this->authorizeBureauUser($user);
+
+        return view('marriage_bureau.users.show', compact('user'));
+    }
+
     public function edit(User $user)
     {
+        $this->authorizeBureauUser($user);
+
         return view('marriage_bureau.users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string',
-            'gender' => 'required|in:male,female,other',
-            'birthday' => 'nullable|date',
-            'country' => 'nullable|string',
-            'city' => 'nullable|string',
-        ]);
+        $this->authorizeBureauUser($user);
 
-        if($request->filled('password')){
+        $validated = $this->validatedData($request, false, $user);
+
+        if ($request->filled('password')) {
             $validated['password'] = Hash::make($request->password);
         }
 
+        // Keep the profile flagged as active/complete so it remains visible on the app.
+        $validated['profile_completed'] = true;
+
         $user->update($validated);
+
+        if ($request->hasFile('photo')) {
+            $this->storePhoto($request, $user);
+        }
 
         return redirect()->route('marriage-bureau.users.index')->with(['message' => 'User updated successfully.', 'alert-type' => 'success']);
     }
 
     public function destroy(User $user)
     {
+        $this->authorizeBureauUser($user);
+
         $user->delete();
-        return redirect()->route('marriage-bureau.users.index')->with(['message' => 'User deleted successfully.', 'alert-type' => 'success']);
+        return redirect()->route('marriage-bureau.users.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
+    }
+
+    private function authorizeBureauUser(User $user): void
+    {
+        abort_unless($user->marriage_bureau_id === Auth::guard('marriage_bureau')->id(), 403);
+    }
+
+    private function validatedData(Request $request, bool $isCreate, ?User $user = null): array
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email' . ($user ? ',' . $user->id : ''),
+            'phone' => 'nullable|string|max:20',
+            'gender' => 'required|in:male,female',
+            'birthday' => 'nullable|date|before:today',
+            'country' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+            'bio' => 'nullable|string|max:200',
+            'marital_status' => 'nullable|string|max:50',
+            'interests' => 'nullable|string',
+
+            'qualification' => 'nullable|string|max:100',
+            'field_of_study' => 'nullable|string|max:255',
+            'university' => 'nullable|string|max:255',
+            'graduation_year' => 'nullable|string|max:10',
+
+            'employment_type' => 'nullable|in:employed,self_employed,business',
+            'job_title' => 'nullable|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'monthly_income' => 'nullable|string|max:100',
+            'residential_status' => 'nullable|string|max:100',
+
+            'height' => 'nullable|string|max:50',
+            'weight' => 'nullable|string|max:50',
+            'body_type' => 'nullable|in:slim,athletic,average,heavy',
+            'complexion' => 'nullable|in:fair,wheatish,dusky,dark',
+            'physical_disability' => 'nullable|boolean',
+
+            'religion' => 'nullable|string|max:100',
+            'community' => 'nullable|string|max:100',
+            'sect' => 'nullable|string|max:100',
+            'mother_tongue' => 'nullable|string|max:100',
+            'other_languages' => 'nullable|array',
+
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+        ];
+
+        $rules['password'] = $isCreate ? 'required|min:6' : 'nullable|min:6';
+
+        $validated = $request->validate($rules);
+
+        unset($validated['photo']);
+
+        $validated['physical_disability'] = $request->boolean('physical_disability');
+
+        $validated['interests'] = $request->filled('interests')
+            ? array_values(array_filter(array_map('trim', explode(',', $request->interests))))
+            : [];
+
+        $validated['other_languages'] = $request->other_languages ?? [];
+
+        if (!$isCreate) {
+            unset($validated['password']);
+        }
+
+        return $validated;
+    }
+
+    private function storePhoto(Request $request, User $user): void
+    {
+        $path = $request->file('photo')->store('profiles/' . $user->id, 'public');
+
+        $user->update([
+            'photos' => [[
+                'path' => $path,
+                'is_main' => true,
+            ]],
+        ]);
     }
 }

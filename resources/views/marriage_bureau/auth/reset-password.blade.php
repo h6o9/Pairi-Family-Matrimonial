@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <title>Reset Password - Piyari Family</title>
     <link rel="stylesheet" href="{{ asset('backend/css/bootstrap.min.css') }}">
+    @include('partials.toastr-styles')
     <style>
         :root { --primary: #6E0016; }
         html, body { background: #fff !important; min-height: 100%; }
@@ -45,5 +46,7 @@
             </div>
         </div>
     </section>
+    <script src="{{ asset('backend/js/jquery-3.7.1.min.js') }}"></script>
+    @include('partials.toastr-scripts')
 </body>
 </html>

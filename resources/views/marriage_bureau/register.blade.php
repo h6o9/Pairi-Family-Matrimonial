@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('backend/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/components.css') }}">
+    @include('partials.toastr-styles')
     <style>
         :root {
             --primary: #6E0016;
@@ -60,16 +61,6 @@
                     <h4 class="text-dark font-weight-normal mb-1">Welcome to <span class="font-weight-bold">Piyari Family</span></h4>
                     <p class="text-muted mb-0">Marriage Bureau Registration</p>
                 </div>
-
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0 pl-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
                 <form method="POST" action="{{ route('marriage-bureau.register') }}" enctype="multipart/form-data">
                     @csrf
@@ -152,5 +143,6 @@
             }
         });
     </script>
+    @include('partials.toastr-scripts')
 </body>
 </html>

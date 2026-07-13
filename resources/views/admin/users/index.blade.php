@@ -52,7 +52,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-striped">
+                    <table class="table table-striped data-table" id="usersTable">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -69,9 +69,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($users as $user)
+                            @foreach($users as $user)
                             <tr>
-                                <td>{{ $user->id }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <strong>{{ $user->name }}</strong>
                                     @if($user->gender)
@@ -110,24 +110,16 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-info btn-sm" title="View"><i class="fa fa-eye"></i></a>
-                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this user?')" title="Delete"><i class="fa fa-trash"></i></button>
-                                    </form>
+                                    <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.users.destroy', $user->id) }}" title="Delete" />
                                 </td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="10" class="text-center text-muted py-4">No users found.</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
-                    {{ $users->links() }}
                 </div>
             </div>
         </div>
     </section>
 </div>
+<x-admin.delete-modal />
 @endsection

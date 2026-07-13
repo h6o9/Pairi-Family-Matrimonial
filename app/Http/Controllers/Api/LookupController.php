@@ -11,7 +11,7 @@ class LookupController extends Controller
     {
         try {
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'data' => config('pairi_family.countries'),
             ], 200);
         } catch (\Exception $e) {
@@ -27,7 +27,7 @@ class LookupController extends Controller
     {
         try {
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'data' => [
                     'countries' => config('pairi_family.countries'),
                     'qualifications' => config('pairi_family.qualifications'),

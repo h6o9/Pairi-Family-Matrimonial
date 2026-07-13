@@ -24,4 +24,4 @@ yarn-error.log
 /vendor/_laravel_ide
 public/uploads/media/
 /.ddev
-.TODO
+.TODO"*.zip" 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
     <title>Forgot Password - Piyari Family</title>
     <link rel="stylesheet" href="{{ asset('backend/css/bootstrap.min.css') }}">
+    @include('partials.toastr-styles')
     <style>
         :root { --primary: #6E0016; }
         html, body { background: #fff !important; min-height: 100%; }
@@ -24,10 +25,6 @@
                 <p class="text-muted mb-0">Marriage Bureau Panel</p>
             </div>
 
-            @if(session('message'))
-                <div class="alert alert-{{ session('alert-type') === 'error' ? 'danger' : 'success' }}">{{ session('message') }}</div>
-            @endif
-
             <form action="{{ route('marriage-bureau.password.email') }}" method="POST">
                 @csrf
                 <div class="form-group">
@@ -42,5 +39,7 @@
             </div>
         </div>
     </section>
+    <script src="{{ asset('backend/js/jquery-3.7.1.min.js') }}"></script>
+    @include('partials.toastr-scripts')
 </body>
 </html>

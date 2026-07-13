@@ -145,22 +145,13 @@
 
     <script>
         (function () {
-            function initPanelUserDropdowns() {
-                document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
-                    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
-                        var instance = bootstrap.Dropdown.getInstance(el);
-                        if (instance) {
-                            instance.dispose();
-                        }
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                    if (!bootstrap.Dropdown.getInstance(el)) {
                         new bootstrap.Dropdown(el);
                     }
-                });
-            }
-            if (!window.__panelDropdownBound) {
-                window.__panelDropdownBound = true;
-                document.addEventListener('turbolinks:load', initPanelUserDropdowns);
-            }
-            initPanelUserDropdowns();
+                }
+            });
         })();
     </script>
 

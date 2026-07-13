@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json([
-        'success' => true,
+        'success' => 200,
         'app' => 'Pairi Family API',
         'version' => '1.1',
         'screens' => [
             'auth' => [
                 'POST /api/register',
+                'POST /api/register/complete',
                 'POST /api/verify-email-otp',
                 'POST /api/resend-email-otp',
                 'POST /api/login',
@@ -60,9 +61,12 @@ Route::get('/', function () {
 // Lookup (public)
 Route::get('/countries', [LookupController::class, 'countries']);
 Route::get('/profile-options', [LookupController::class, 'profileOptions']);
+Route::get('/referrals/resolve/{referralCode}', [ReferralController::class, 'resolve'])
+    ->where('referralCode', '[A-Z0-9]{8}');
 
 // Public Auth
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register/otp-verify', [AuthController::class, 'registerComplete']);
 Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp']);
 Route::post('/resend-email-otp', [AuthController::class, 'resendEmailOtp']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -94,8 +98,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/complete', [ProfileController::class, 'completeProfile']);
     });
 
+    Route::get('/profile-details/{user}', [MatchController::class, 'profileDetails']);
+
     Route::prefix('matches')->group(function () {
         Route::get('/home', [MatchController::class, 'home']);
+        Route::get('/best-match', [MatchController::class, 'bestMatch']);
         Route::get('/search', [MatchController::class, 'search']);
         Route::get('/filter', [MatchController::class, 'filter']);
         Route::get('/{user}', [MatchController::class, 'show']);
@@ -111,6 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscriptions/subscribe', [\App\Http\Controllers\Api\SubscriptionController::class, 'subscribe']);
     Route::post('/subscriptions/upload-payment', [\App\Http\Controllers\Api\SubscriptionController::class, 'uploadPayment']);
     Route::post('/subscriptions/cancel', [\App\Http\Controllers\Api\SubscriptionController::class, 'cancel']);
+    Route::get('/referrals/link', [ReferralController::class, 'link']);
     Route::get('/referrals/stats', [ReferralController::class, 'stats']);
     Route::get('/referrals/history', [ReferralController::class, 'history']);
     Route::get('/referrals/rewards', [ReferralController::class, 'rewards']);

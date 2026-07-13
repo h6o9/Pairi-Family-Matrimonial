@@ -34,8 +34,9 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" name="description" rows="4">{{ $marriage_bureau_subscription->description }}</textarea>
+                            <label>Features</label>
+                            <textarea class="form-control" name="features" rows="5" placeholder="Enter one feature per line">{{ implode("\n", $marriage_bureau_subscription->features ?? []) }}</textarea>
+                            <small class="text-muted">Each line will show as a separate feature on the marriage bureau plan card.</small>
                         </div>
 
                         <div class="form-group">

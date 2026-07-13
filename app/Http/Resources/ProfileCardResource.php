@@ -23,7 +23,7 @@ class ProfileCardResource extends JsonResource
             'profile_photo' => $this->profile_photo,
             'is_verified' => (bool) $this->is_verified,
             'phone_verified' => (bool) $this->phone_verified,
-            'is_new' => $this->created_at?->gte(now()->subDays(30)) ?? false,
+            'is_new' => $this->created_at?->gte(now()->subDays(config('pairi_family.new_profile_days', 3))) ?? false,
             'match_score' => (int) ($this->match_score ?? 0),
             'interests' => $this->interests ?? [],
         ];

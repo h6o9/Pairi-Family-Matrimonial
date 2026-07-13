@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('backend/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/css/components.css') }}">
+    @include('partials.toastr-styles')
     <style>
         :root {
             --primary: #6E0016;
@@ -60,12 +61,6 @@
                     </div>
                 @endif
 
-                @if (session('message'))
-                    <div class="alert alert-{{ session('alert-type') === 'error' ? 'danger' : 'success' }}">
-                        {{ session('message') }}
-                    </div>
-                @endif
-
                 <form method="POST" action="{{ route('marriage-bureau.login') }}">
                     @csrf
                     <div class="form-group">
@@ -109,5 +104,6 @@
     <script src="{{ asset('backend/js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('backend/js/popper.min.js') }}"></script>
     <script src="{{ asset('backend/js/bootstrap.min.js') }}"></script>
+    @include('partials.toastr-scripts')
 </body>
 </html>

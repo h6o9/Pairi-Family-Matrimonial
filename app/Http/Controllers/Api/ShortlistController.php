@@ -15,7 +15,7 @@ class ShortlistController extends Controller
     {
         try {
             $viewer = $request->user();
-            $tab = $request->get('tab', 'i_liked');
+            $tab = $this->resolveShortlistTab($request->get('tab', 'i_liked'));
 
             if ($tab === 'liked_me') {
                 $userIds = ProfileInterest::query()
@@ -42,8 +42,9 @@ class ShortlistController extends Controller
             }
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'tab' => $tab,
+                'tab_label' => $tab === 'liked_me' ? 'Liked Me' : 'Profiles I Liked',
                 'total' => $users->count(),
                 'profiles' => ProfileCardResource::collection($users),
             ], 200);
@@ -59,31 +60,53 @@ class ShortlistController extends Controller
     public function sendInterest(Request $request, User $user): JsonResponse
     {
         try {
-            $viewer = $request->user();
+            $sender = $request->user();
 
-            if ($user->id === $viewer->id) {
+            if ($user->id === $sender->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You cannot send interest to yourself.',
                 ], 422);
             }
 
+            if ($user->status !== 'active' || !$user->profile_completed) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Profile not available.',
+                ], 404);
+            }
+
+            $opposite = match ($sender->gender) {
+                'male' => 'female',
+                'female' => 'male',
+                default => null,
+            };
+
+            if ($opposite && $user->gender !== $opposite) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can only send interest to opposite gender profiles.',
+                ], 422);
+            }
+
             $existing = ProfileInterest::query()
-                ->where('from_user_id', $viewer->id)
+                ->where('from_user_id', $sender->id)
                 ->where('to_user_id', $user->id)
                 ->first();
 
             if ($existing && $existing->action === 'interest') {
                 return response()->json([
-                    'success' => true,
+                    'success' => 200,
                     'message' => 'Already shortlisted.',
                     'shortlisted' => true,
+                    'from_user_id' => $sender->id,
+                    'to_user_id' => $user->id,
                 ], 200);
             }
 
-            ProfileInterest::updateOrCreate(
+            $interest = ProfileInterest::updateOrCreate(
                 [
-                    'from_user_id' => $viewer->id,
+                    'from_user_id' => $sender->id,
                     'to_user_id' => $user->id,
                 ],
                 ['action' => 'interest']
@@ -91,15 +114,19 @@ class ShortlistController extends Controller
 
             $mutual = ProfileInterest::query()
                 ->where('from_user_id', $user->id)
-                ->where('to_user_id', $viewer->id)
+                ->where('to_user_id', $sender->id)
                 ->where('action', 'interest')
                 ->exists();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Interest sent successfully. Profile shortlisted.',
                 'shortlisted' => true,
                 'mutual_match' => $mutual,
+                'shortlist_tab' => 'i_liked',
+                'from_user_id' => $sender->id,
+                'to_user_id' => $user->id,
+                'interest_id' => $interest->id,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -131,7 +158,7 @@ class ShortlistController extends Controller
             );
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Profile skipped.',
             ], 200);
         } catch (\Exception $e) {
@@ -141,5 +168,14 @@ class ShortlistController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
+    }
+
+    private function resolveShortlistTab(?string $tab): string
+    {
+        return match ($tab) {
+            'i_like', 'i_liked', 'profiles_i_liked' => 'i_liked',
+            'like_me', 'liked_me' => 'liked_me',
+            default => 'i_liked',
+        };
     }
 }

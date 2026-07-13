@@ -13,12 +13,6 @@
             </div>
         </div>
 
-        @if(session('message'))
-            <div class="alert alert-{{ session('alert-type') === 'error' ? 'danger' : 'success' }}">
-                {{ session('message') }}
-            </div>
-        @endif
-
         <div class="section-body">
             <div class="row">
                 <div class="col-12">

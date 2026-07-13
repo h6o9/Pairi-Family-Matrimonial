@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
@@ -24,15 +25,72 @@ public function register(Request $request): JsonResponse
     try {
 
         $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6',
+            'referral_code' => 'nullable|string|exists:users,referral_code',
         ]);
 
         $otp = $this->generateOtp(6);
-        $resendAt = now()->addSeconds(config('pairi_family.otp_resend_seconds', 45));
+        $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
+
+        // OTP sirf email ke liye — resend support; complete API par verify nahi hota
+        Cache::put(
+            $this->pendingRegistrationCacheKey($request->email),
+            [
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(10),
+                'otp_resend_available_at' => now()->addSeconds($resendSeconds),
+            ],
+            now()->addMinutes(30)
+        );
+
+        $this->sendOtpEmail($request->email, $otp, 'Email Verification - Pairi Family');
+
+        return response()->json([
+            'success' => 200,
+            'message' => 'OTP sent to your email. Please verify to complete registration.',
+            'data' => [
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'referral_code' => $request->referral_code,
+            ],
+            'resend_after_seconds' => $resendSeconds,
+        ], 200);
+
+    } catch (ValidationException $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->validator->errors()->first(),
+        ], 422);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Registration failed.',
+            'error' => config('app.debug') ? $e->getMessage() : null,
+        ], 500);
+    }
+}
+
+public function registerComplete(Request $request): JsonResponse
+{
+    try {
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'password' => 'required|string|min:6',
+            'referral_code' => 'nullable|string|exists:users,referral_code',
+        ]);
 
         $referrerId = null;
-        if ($request->filled('referral_code')) {
+        if (!empty($request->referral_code)) {
             $referrer = User::where('referral_code', $request->referral_code)->first();
             if ($referrer) {
                 $referrerId = $referrer->id;
@@ -44,21 +102,22 @@ public function register(Request $request): JsonResponse
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => $request->password,
-            'otp' => $otp,
-            'email_otp_expires_at' => now()->addMinutes(10),
-            'otp_resend_available_at' => $resendAt,
+            'is_verified' => true,
+            'email_verified_at' => now(),
             'terms_accepted_at' => now(),
             'status' => 'active',
             'referred_by' => $referrerId,
         ]);
 
-        $this->sendOtpEmail($user->email, $otp, 'Email Verification - Pairi Family');
+        Cache::forget($this->pendingRegistrationCacheKey($request->email));
+
+        $this->processReferralReward($user);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Account created successfully. We sent a 6-digit code to your email.',
-            'user' => UserResource::toPayload($user),
-            'resend_after_seconds' => config('pairi_family.otp_resend_seconds', 45),
+            'success' => 200,
+            'message' => 'OTP verified successfully.',
+            'user' => UserResource::toPayload($user->fresh()),
+            'token' => $user->createToken('auth')->plainTextToken,
         ], 201);
 
     } catch (ValidationException $e) {
@@ -88,7 +147,7 @@ public function register(Request $request): JsonResponse
 
             if ($user->is_verified) {
                 return response()->json([
-                    'success' => true,
+                    'success' => 200,
                     'message' => 'Email already verified.',
                     'user' => UserResource::toPayload($user),
                     'token' => $user->createToken('auth')->plainTextToken,
@@ -110,7 +169,7 @@ public function register(Request $request): JsonResponse
             $this->processReferralReward($user);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Email verified successfully.',
                 'user' => UserResource::toPayload($user->fresh()),
                 'token' => $user->createToken('auth')->plainTextToken,
@@ -134,10 +193,49 @@ public function register(Request $request): JsonResponse
         ]);
 
         $request->validate([
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email'
         ]);
 
+        $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
+
+        // Pending registration (not yet stored in users table)
+        $cacheKey = $this->pendingRegistrationCacheKey($request->email);
+        $pending = Cache::get($cacheKey);
+
+        if ($pending) {
+            if (!empty($pending['otp_resend_available_at']) && now()->lessThan($pending['otp_resend_available_at'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please wait before requesting a new code.',
+                    'resend_after_seconds' => now()->diffInSeconds($pending['otp_resend_available_at']),
+                ], 429);
+            }
+
+            $otp = $this->generateOtp(6);
+            $pending['otp'] = $otp;
+            $pending['otp_expires_at'] = now()->addMinutes(10);
+            $pending['otp_resend_available_at'] = now()->addSeconds($resendSeconds);
+
+            Cache::put($cacheKey, $pending, now()->addMinutes(30));
+
+            $this->sendOtpEmail($request->email, $otp, 'Email Verification - Pairi Family');
+
+            return response()->json([
+                'success' => 200,
+                'message' => 'OTP resent to your email.',
+                'resend_after_seconds' => $resendSeconds,
+            ], 200);
+        }
+
+        // Fallback: existing (already registered) unverified user
         $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No pending registration or account found for this email.'
+            ], 404);
+        }
 
         Log::info('User found.', [
             'user_id' => $user->id,
@@ -165,7 +263,6 @@ public function register(Request $request): JsonResponse
         }
 
         $otp = $this->generateOtp(6);
-        $resendSeconds = config('pairi_family.otp_resend_seconds', 45);
 
         Log::info('Generated OTP.', [
             'otp' => $otp
@@ -188,7 +285,7 @@ public function register(Request $request): JsonResponse
         Log::info('OTP email sent successfully.');
 
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => 'OTP resent to your email.',
             'resend_after_seconds' => $resendSeconds,
         ], 200);
@@ -231,6 +328,13 @@ public function register(Request $request): JsonResponse
                 return response()->json(['success' => false, 'message' => 'Invalid credentials.'], 401);
             }
 
+            if ($user->marriage_bureau_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This profile was created by a marriage bureau and cannot log in to the app. Please contact the bureau or create your own account.',
+                ], 403);
+            }
+
             if ($user->status !== 'active') {
                 return response()->json(['success' => false, 'message' => 'Your account is inactive.'], 403);
             }
@@ -245,7 +349,7 @@ public function register(Request $request): JsonResponse
             }
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Logged in successfully.',
                 'user' => UserResource::toPayload($user),
                 'token' => $user->createToken('auth')->plainTextToken,
@@ -284,7 +388,7 @@ public function register(Request $request): JsonResponse
         $this->sendOtpEmail($user->email, $otp, 'Password Reset - Pairi Family');
 
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => 'Reset code sent to your email.',
             'resend_after_seconds' => $resendSeconds,
         ], 200);
@@ -351,7 +455,7 @@ public function verifyResetOtp(Request $request): JsonResponse
         ]);
 
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => 'OTP verified successfully. You can now reset your password.',
         ], 200);
 
@@ -397,7 +501,7 @@ public function verifyResetOtp(Request $request): JsonResponse
             ]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Password updated successfully.',
             ], 200);
         } catch (ValidationException $e) {
@@ -432,7 +536,7 @@ public function verifyResetOtp(Request $request): JsonResponse
                 'reset_password_token' => null,
             ]);
 
-            return response()->json(['success' => true, 'message' => 'Password reset successfully.'], 200);
+            return response()->json(['success' => 200, 'message' => 'Password reset successfully.'], 200);
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -471,7 +575,7 @@ public function verifyResetOtp(Request $request): JsonResponse
         ]);
 
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => 'Password changed successfully.'
         ], 200);
 
@@ -524,7 +628,7 @@ public function verifyResetOtp(Request $request): JsonResponse
             ]);
 
             $response = [
-                'success' => true,
+                'success' => 200,
                 'message' => 'Verification code sent to your phone.',
                 'resend_after_seconds' => $resendSeconds,
             ];
@@ -572,7 +676,7 @@ public function verifyResetOtp(Request $request): JsonResponse
             ]);
 
             $response = [
-                'success' => true,
+                'success' => 200,
                 'message' => 'Verification code resent.',
                 'resend_after_seconds' => $resendSeconds,
             ];
@@ -627,7 +731,7 @@ public function verifyResetOtp(Request $request): JsonResponse
         ]);
 
         return response()->json([
-            'success' => true,
+            'success' => 200,
             'message' => 'Number verified! Your profile has been verified successfully.',
             'user' => UserResource::toPayload($user->fresh()),
         ], 200);
@@ -652,44 +756,71 @@ public function verifyResetOtp(Request $request): JsonResponse
 public function profile(Request $request): JsonResponse
 {
     try {
-
         $user = $request->user();
+
+        $photos = collect($user->photos ?? [])->map(fn ($photo) => [
+            'url' => media_url($photo['path'] ?? null),
+            'path' => $photo['path'] ?? null,
+            'is_main' => (bool) ($photo['is_main'] ?? false),
+        ])->values()->all();
+
+        // Get main photo URL
+        $mainPhoto = null;
+        foreach ($user->photos ?? [] as $photo) {
+            if (isset($photo['is_main']) && $photo['is_main'] === true) {
+                $mainPhoto = media_url($photo['path'] ?? null);
+                break;
+            }
+        }
+        // If no main photo, use first photo
+        if (!$mainPhoto && !empty($photos)) {
+            $mainPhoto = $photos[0]['url'] ?? null;
+        }
+        // Fallback to profile_photo column
+        if (!$mainPhoto) {
+            $mainPhoto = $user->profile_photo ?? null;
+        }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'image'     => $user->image,
-                'education' => $user->qualification,
-                'career'    => $user->job_title,
-                'religion'  => $user->religion,
-                'bio'       => $user->bio,
-                'age'       => $user->birthday
+                'id'         => $user->id,
+                'name'       => $user->name,  // ✅ Added name
+                'image'      => $mainPhoto,   // ✅ Main profile photo
+                'photos'     => $photos,
+                'education'  => $user->qualification,
+                'career'     => $user->job_title,
+                'religion'   => $user->religion,
+                'bio'        => $user->bio,
+                'age'        => $user->birthday
                     ? Carbon::parse($user->birthday)->age
                     : null,
-                'height'    => $user->height,
-                'sect'      => $user->sect,
-                'language'  => $user->mother_tongue,
-                'interest'  => $user->interests,
-                'city'      => $user->city,
-                'country'   => $user->country,
+                'height'     => $user->height,
+                'sect'       => $user->sect,
+                'language'   => $user->mother_tongue,
+                'interests'  => $user->interests,  // ✅ Fixed key name
+                'city'       => $user->city,
+                'country'    => $user->country,
+                'community'  => $user->community,   // ✅ Added
+                'gender'     => $user->gender,       // ✅ Added
+                'marital_status' => $user->marital_status, // ✅ Added
+                'profile_step' => $user->profile_step,     // ✅ Added
             ]
         ], 200);
 
     } catch (\Exception $e) {
-
         return response()->json([
             'success' => false,
             'message' => 'Fetch profile failed.',
             'error' => config('app.debug') ? $e->getMessage() : null
         ], 500);
-
     }
 }
     public function logout(Request $request): JsonResponse
     {
         try {
             $request->user()->currentAccessToken()->delete();
-            return response()->json(['success' => true, 'message' => 'Logged out successfully.'], 200);
+            return response()->json(['success' => 200, 'message' => 'Logged out successfully.'], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -697,6 +828,11 @@ public function profile(Request $request): JsonResponse
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
+    }
+
+    private function pendingRegistrationCacheKey(string $email): string
+    {
+        return 'pending_registration_' . strtolower(trim($email));
     }
 
     private function generateOtp(int $length): string
@@ -726,7 +862,11 @@ public function profile(Request $request): JsonResponse
                     ->from(config('mail.from.address'), 'Piyari Family');
             });
         } catch (\Exception $e) {
-            // Log error silently
+            Log::error('Failed to send OTP email.', [
+                'email' => $email,
+                'subject' => $subject,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 

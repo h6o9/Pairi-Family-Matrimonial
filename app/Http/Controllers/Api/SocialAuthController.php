@@ -39,6 +39,13 @@ class SocialAuthController extends Controller
 
             $user = User::where('email', $email)->first();
 
+            if ($user && $user->marriage_bureau_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This profile was created by a marriage bureau and cannot log in to the app. Please contact the bureau or create your own account.',
+                ], 403);
+            }
+
             if (!$user) {
                 $user = User::create([
                     'name' => $name,
@@ -66,7 +73,7 @@ class SocialAuthController extends Controller
             );
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Logged in successfully.',
                 'user' => UserResource::toPayload($user->fresh()),
                 'token' => $user->createToken('auth')->plainTextToken,

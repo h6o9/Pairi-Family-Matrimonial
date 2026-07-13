@@ -20,7 +20,7 @@ class SettingsController extends Controller
             $activeSub = $user->activeSubscription();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'user' => UserResource::toPayload($user),
                 'subscription' => $activeSub ? [
                     'plan_name' => $activeSub->plan->name ?? 'Free',
@@ -31,7 +31,7 @@ class SettingsController extends Controller
                 'refer_and_earn' => [
                     'title' => 'Refer & Earn',
                     'subtitle' => 'Invite friends and earn rewards',
-                    'referral_link' => url('/register?ref=' . $user->referral_code),
+                    'referral_link' => referral_link($user->ensureReferralCode()),
                     'reward_points' => $user->reward_points,
                 ],
                 'visibility' => [
@@ -60,7 +60,7 @@ class SettingsController extends Controller
             $user->update($data);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Visibility settings updated.',
                 'visibility' => [
                     'profile_photo_visible' => (bool) $user->profile_photo_visible,
@@ -85,7 +85,7 @@ class SettingsController extends Controller
             $request->user()->tokens()->delete();
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Account deactivated. Your profile is hidden.',
             ], 200);
         } catch (\Exception $e) {
@@ -118,7 +118,7 @@ class SettingsController extends Controller
             ]);
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Account deleted successfully.',
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -196,7 +196,7 @@ class SettingsController extends Controller
             }
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'notifications' => $notifications,
             ], 200);
         } catch (\Exception $e) {

@@ -12,7 +12,7 @@ class SettingController extends Controller
     {
         try {
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'settings' => SystemSetting::all()->pluck('value', 'key'),
             ], 200);
         } catch (\Exception $e) {
@@ -36,7 +36,7 @@ class SettingController extends Controller
             }
 
             return response()->json([
-                'success' => true,
+                'success' => 200,
                 'message' => 'Settings updated successfully',
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
