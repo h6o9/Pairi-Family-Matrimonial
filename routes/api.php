@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\LookupController;
 use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\ProfileController;
@@ -60,6 +61,11 @@ Route::get('/', function () {
                 'GET /api/countries',
                 'GET /api/profile-options',
             ],
+            'content' => [
+                'GET /api/faqs',
+                'GET /api/terms-conditions',
+                'GET /api/privacy-policy',
+            ],
         ],
     ]);
 });
@@ -67,6 +73,9 @@ Route::get('/', function () {
 // Lookup (public)
 Route::get('/countries', [LookupController::class, 'countries']);
 Route::get('/profile-options', [LookupController::class, 'profileOptions']);
+Route::get('/faqs', [ContentController::class, 'faqs']);
+Route::get('/terms-conditions', [ContentController::class, 'termsConditions']);
+Route::get('/privacy-policy', [ContentController::class, 'privacyPolicy']);
 Route::get('/lookups/{type}', [LookupController::class, 'lookup']);
 foreach (array_keys(config('profile_lookups', [])) as $lookupType) {
     if ($lookupType === 'countries') {

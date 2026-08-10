@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()->latest();
+        $query = User::query()->with('marriageBureau:id,name')->latest();
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -40,6 +40,14 @@ class UserController extends Controller
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('creation_type')) {
+            if ($request->creation_type === 'app') {
+                $query->whereNull('marriage_bureau_id');
+            } elseif ($request->creation_type === 'marriage_bureau') {
+                $query->whereNotNull('marriage_bureau_id');
+            }
         }
 
         $users = $query->get();

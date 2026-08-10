@@ -40,14 +40,6 @@
                                     <option value="months" @selected(old('duration_unit', $marriage_bureau_subscription->duration_unit ?? 'days') === 'months')>Months</option>
                                 </select>
                             </div>
-                            <div class="form-group col-md-12">
-                                <label>Features (read-only — full app access)</label>
-                                <ul class="list-group">
-                                    @foreach(($marriage_bureau_subscription->features ?? []) as $feature)
-                                        <li class="list-group-item">{{ $feature }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Update Price & Duration</button>

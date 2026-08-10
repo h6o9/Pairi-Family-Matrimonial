@@ -4,9 +4,11 @@ namespace App\Http\Controllers\MarriageBureau;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\LookupOption;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -19,7 +21,7 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('marriage_bureau.users.create');
+        return view('marriage_bureau.users.create', ['lookups' => $this->formLookups()]);
     }
 
     public function store(Request $request)
@@ -59,7 +61,10 @@ class UserController extends Controller
     {
         $this->authorizeBureauUser($user);
 
-        return view('marriage_bureau.users.edit', compact('user'));
+        return view('marriage_bureau.users.edit', [
+            'user' => $user,
+            'lookups' => $this->formLookups(),
+        ]);
     }
 
     public function update(Request $request, User $user)
@@ -137,14 +142,15 @@ class UserController extends Controller
             'city' => 'nullable|string|max:100',
             'bio' => 'nullable|string|max:200',
             'marital_status' => 'nullable|string|max:50',
-            'interests' => 'nullable|string',
+            'interests' => 'nullable|array',
+            'interests.*' => 'string|max:255',
 
             'qualification' => 'nullable|string|max:100',
             'field_of_study' => 'nullable|string|max:255',
             'university' => 'nullable|string|max:255',
             'graduation_year' => 'nullable|string|max:10',
 
-            'employment_type' => 'nullable|in:employed,self_employed,business',
+            'employment_type' => 'nullable|string|max:100',
             'job_title' => 'nullable|string|max:255',
             'company' => 'nullable|string|max:255',
             'monthly_income' => 'nullable|string|max:100',
@@ -152,8 +158,8 @@ class UserController extends Controller
 
             'height' => 'nullable|string|max:50',
             'weight' => 'nullable|string|max:50',
-            'body_type' => 'nullable|in:slim,athletic,average,heavy',
-            'complexion' => 'nullable|in:fair,wheatish,dusky,dark',
+            'body_type' => 'nullable|string|max:100',
+            'complexion' => 'nullable|string|max:100',
             'physical_disability' => 'nullable|boolean',
 
             'religion' => 'nullable|string|max:100',
@@ -173,9 +179,7 @@ class UserController extends Controller
 
         $validated['physical_disability'] = $request->boolean('physical_disability');
 
-        $validated['interests'] = $request->filled('interests')
-            ? array_values(array_filter(array_map('trim', explode(',', $request->interests))))
-            : [];
+        $validated['interests'] = array_values(array_filter($request->input('interests', [])));
 
         $validated['other_languages'] = $request->other_languages ?? [];
 
@@ -184,6 +188,46 @@ class UserController extends Controller
         }
 
         return $validated;
+    }
+
+    private function formLookups(): array
+    {
+        return Cache::remember('marriage_bureau_form_lookups', 600, function () {
+            $types = [
+                'countries',
+                'marital-statuses',
+                'qualifications',
+                'fields-of-study',
+                'universities',
+                'graduation-years',
+                'employment-types',
+                'incomes',
+                'residences',
+                'body-types',
+                'complexions',
+                'religions',
+                'communities',
+                'sub-communities',
+                'mother-tongues',
+                'languages',
+                'hobbies-interests',
+            ];
+            $lookups = [];
+
+            foreach ($types as $type) {
+                $definition = config("profile_lookups.{$type}");
+                $lookups[$type] = is_array($definition)
+                    ? LookupOption::fromTable($definition['table'])
+                        ->newQuery()
+                        ->where('status', 'active')
+                        ->orderBy('name')
+                        ->pluck('name')
+                        ->all()
+                    : [];
+            }
+
+            return $lookups;
+        });
     }
 
     private function storePhoto(Request $request, User $user): void

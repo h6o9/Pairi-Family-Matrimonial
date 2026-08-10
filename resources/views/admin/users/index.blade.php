@@ -11,39 +11,46 @@
         <div class="section-body">
             <div class="card mb-3">
                 <div class="card-body">
-                    <form method="GET" class="row">
-                        <div class="col-md-3">
+                    <form method="GET" class="row g-2 align-items-center">
+                        <div class="col-xl-3 col-md-6">
                             <input type="text" name="search" class="form-control" placeholder="Search name, email, phone, city..." value="{{ request('search') }}">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl col-md-4">
                             <select name="verified" class="form-control">
                                 <option value="">Email Verified</option>
                                 <option value="yes" @selected(request('verified') === 'yes')>Verified</option>
                                 <option value="no" @selected(request('verified') === 'no')>Pending</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl col-md-4">
                             <select name="phone_verified" class="form-control">
                                 <option value="">Phone Verified</option>
                                 <option value="yes" @selected(request('phone_verified') === 'yes')>Verified</option>
                                 <option value="no" @selected(request('phone_verified') === 'no')>Pending</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl col-md-4">
                             <select name="profile" class="form-control">
                                 <option value="">Profile Status</option>
                                 <option value="complete" @selected(request('profile') === 'complete')>Complete</option>
                                 <option value="incomplete" @selected(request('profile') === 'incomplete')>Incomplete</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-xl col-md-4">
                             <select name="status" class="form-control">
                                 <option value="">Account Status</option>
                                 <option value="active" @selected(request('status') === 'active')>Active</option>
                                 <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
                             </select>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-xl col-md-4">
+                            <select name="creation_type" class="form-control">
+                                <option value="">Creation Type</option>
+                                <option value="app" @selected(request('creation_type') === 'app')>App</option>
+                                <option value="marriage_bureau" @selected(request('creation_type') === 'marriage_bureau')>Marriage Bureau</option>
+                            </select>
+                        </div>
+                        <div class="col-xl-auto col-md-4">
                             <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-search"></i></button>
                         </div>
                     </form>
@@ -57,6 +64,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Name</th>
+                                <th>Creation Type</th>
                                 <th>Age</th>
                                 <th>Location</th>
                                 <th>Profession</th>
@@ -76,6 +84,13 @@
                                     <strong>{{ $user->name }}</strong>
                                     @if($user->gender)
                                         <br><small class="text-muted">{{ ucfirst($user->gender) }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($user->marriage_bureau_id)
+                                        <span class="badge badge-info">{{ $user->marriageBureau?->name ?? 'Marriage Bureau' }}</span>
+                                    @else
+                                        <span class="badge badge-secondary">App</span>
                                     @endif
                                 </td>
                                 <td>{{ $user->age ?? '-' }}</td>
@@ -109,8 +124,10 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-info btn-sm" title="View"><i class="fa fa-eye"></i></a>
-                                    <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.users.destroy', $user->id) }}" title="Delete" />
+                                    <div class="table-actions">
+                                        <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-info btn-sm" title="View"><i class="fa fa-eye"></i></a>
+                                        <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.users.destroy', $user->id) }}" title="Delete" />
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach

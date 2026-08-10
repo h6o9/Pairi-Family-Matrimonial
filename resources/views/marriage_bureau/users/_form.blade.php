@@ -4,7 +4,7 @@
     $selected = fn($field, $value) => (string) $old($field) === (string) $value ? 'selected' : '';
     $checked = fn($field, $value) => (string) $old($field) === (string) $value ? 'checked' : '';
     $otherLanguages = old('other_languages', $u->other_languages ?? []);
-    $interestsValue = old('interests', $u ? implode(', ', $u->interests ?? []) : '');
+    $selectedInterests = old('interests', $u->interests ?? []);
 @endphp
 
 <ul class="nav nav-tabs mb-3" role="tablist">
@@ -50,7 +50,7 @@
                 <label>Marital Status</label>
                 <select name="marital_status" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.marital_statuses') as $status)
+                    @foreach($lookups['marital-statuses'] as $status)
                         <option value="{{ $status }}" {{ $selected('marital_status', $status) }}>{{ $status }}</option>
                     @endforeach
                 </select>
@@ -59,7 +59,7 @@
                 <label>Country</label>
                 <select name="country" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.countries') as $country)
+                    @foreach($lookups['countries'] as $country)
                         <option value="{{ $country }}" {{ $selected('country', $country) }}>{{ $country }}</option>
                     @endforeach
                 </select>
@@ -77,29 +77,45 @@
                 <label>Qualification</label>
                 <select name="qualification" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.qualifications') as $q)
+                    @foreach($lookups['qualifications'] as $q)
                         <option value="{{ $q }}" {{ $selected('qualification', $q) }}>{{ $q }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="form-group col-md-6">
                 <label>Field of Study</label>
-                <input type="text" name="field_of_study" class="form-control" value="{{ $old('field_of_study') }}">
+                <select name="field_of_study" class="form-control">
+                    <option value="">Select</option>
+                    @foreach($lookups['fields-of-study'] as $field)
+                        <option value="{{ $field }}" {{ $selected('field_of_study', $field) }}>{{ $field }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group col-md-6">
                 <label>University</label>
-                <input type="text" name="university" class="form-control" value="{{ $old('university') }}">
+                <select name="university" class="form-control">
+                    <option value="">Select</option>
+                    @foreach($lookups['universities'] as $university)
+                        <option value="{{ $university }}" {{ $selected('university', $university) }}>{{ $university }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group col-md-6">
                 <label>Graduation Year</label>
-                <input type="text" name="graduation_year" class="form-control" value="{{ $old('graduation_year') }}">
+                <select name="graduation_year" class="form-control">
+                    <option value="">Select</option>
+                    @foreach($lookups['graduation-years'] as $year)
+                        <option value="{{ $year }}" {{ $selected('graduation_year', $year) }}>{{ $year }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group col-md-4">
                 <label>Employment Type</label>
                 <select name="employment_type" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.employment_types') as $type)
-                        <option value="{{ $type['value'] }}" {{ $selected('employment_type', $type['value']) }}>{{ $type['label'] }}</option>
+                    @foreach($lookups['employment-types'] as $type)
+                        @php($employmentValue = \Illuminate\Support\Str::snake($type))
+                        <option value="{{ $employmentValue }}" {{ $selected('employment_type', $employmentValue) }}>{{ $type }}</option>
                     @endforeach
                 </select>
             </div>
@@ -115,7 +131,7 @@
                 <label>Monthly Income</label>
                 <select name="monthly_income" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.monthly_income_ranges') as $range)
+                    @foreach($lookups['incomes'] as $range)
                         <option value="{{ $range }}" {{ $selected('monthly_income', $range) }}>{{ $range }}</option>
                     @endforeach
                 </select>
@@ -124,7 +140,7 @@
                 <label>Residential Status</label>
                 <select name="residential_status" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.residential_statuses') as $status)
+                    @foreach($lookups['residences'] as $status)
                         <option value="{{ $status }}" {{ $selected('residential_status', $status) }}>{{ $status }}</option>
                     @endforeach
                 </select>
@@ -146,7 +162,7 @@
                 <label>Body Type</label>
                 <select name="body_type" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.body_types') as $type)
+                    @foreach($lookups['body-types'] as $type)
                         <option value="{{ $type }}" {{ $selected('body_type', $type) }}>{{ ucfirst($type) }}</option>
                     @endforeach
                 </select>
@@ -155,7 +171,7 @@
                 <label>Complexion</label>
                 <select name="complexion" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.complexions') as $c)
+                    @foreach($lookups['complexions'] as $c)
                         <option value="{{ $c }}" {{ $selected('complexion', $c) }}>{{ ucfirst($c) }}</option>
                     @endforeach
                 </select>
@@ -176,24 +192,34 @@
                 <label>Religion</label>
                 <select name="religion" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.religions') as $religion)
+                    @foreach($lookups['religions'] as $religion)
                         <option value="{{ $religion }}" {{ $selected('religion', $religion) }}>{{ $religion }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="form-group col-md-6">
                 <label>Community</label>
-                <input type="text" name="community" class="form-control" value="{{ $old('community') }}">
+                <select name="community" class="form-control">
+                    <option value="">Select</option>
+                    @foreach($lookups['communities'] as $community)
+                        <option value="{{ $community }}" {{ $selected('community', $community) }}>{{ $community }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group col-md-6">
-                <label>Sect</label>
-                <input type="text" name="sect" class="form-control" value="{{ $old('sect') }}">
+                <label>Sub Community</label>
+                <select name="sect" class="form-control">
+                    <option value="">Select</option>
+                    @foreach($lookups['sub-communities'] as $community)
+                        <option value="{{ $community }}" {{ $selected('sect', $community) }}>{{ $community }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group col-md-6">
                 <label>Mother Tongue</label>
                 <select name="mother_tongue" class="form-control">
                     <option value="">Select</option>
-                    @foreach(config('pairi_family.mother_tongues') as $lang)
+                    @foreach($lookups['mother-tongues'] as $lang)
                         <option value="{{ $lang }}" {{ $selected('mother_tongue', $lang) }}>{{ $lang }}</option>
                     @endforeach
                 </select>
@@ -201,7 +227,7 @@
             <div class="form-group col-md-12">
                 <label>Other Languages Spoken</label>
                 <select name="other_languages[]" class="form-control select2-multi" multiple>
-                    @foreach(config('pairi_family.languages') as $lang)
+                    @foreach($lookups['languages'] as $lang)
                         <option value="{{ $lang }}" {{ in_array($lang, $otherLanguages ?? []) ? 'selected' : '' }}>{{ $lang }}</option>
                     @endforeach
                 </select>
@@ -217,8 +243,12 @@
             </div>
             <div class="form-group col-md-12">
                 <label>Interests</label>
-                <input type="text" name="interests" class="form-control" placeholder="e.g. Reading, Travelling, Cooking" value="{{ $interestsValue }}">
-                <small class="form-text text-muted">Separate multiple interests with a comma.</small>
+                <select name="interests[]" class="form-control select2-multi" multiple>
+                    @foreach($lookups['hobbies-interests'] as $interest)
+                        <option value="{{ $interest }}" {{ in_array($interest, $selectedInterests ?? []) ? 'selected' : '' }}>{{ $interest }}</option>
+                    @endforeach
+                </select>
+                <small class="form-text text-muted">Select one or more hobbies/interests configured by admin.</small>
             </div>
             <div class="form-group col-md-6">
                 <label>Profile Photo</label>

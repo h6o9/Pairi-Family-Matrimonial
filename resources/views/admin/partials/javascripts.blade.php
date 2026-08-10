@@ -59,6 +59,43 @@
 
 <script>
     $(document).ready(function() {
+        const sidebarSubmenuSelector = '.sidebar-submenu, .mb-sidebar-submenu';
+        const sidebarGroupSelector = '.sidebar-group-toggle, .mb-sidebar-toggle';
+
+        function closeSidebarSections() {
+            document.querySelectorAll(sidebarSubmenuSelector).forEach(function(menu) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+                    const instance = bootstrap.Collapse.getInstance(menu);
+                    if (instance) {
+                        instance.dispose();
+                    }
+                }
+
+                menu.classList.remove('show', 'collapsing');
+                menu.classList.add('collapse');
+                menu.style.removeProperty('height');
+            });
+
+            document.querySelectorAll(sidebarGroupSelector).forEach(function(toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        document.querySelectorAll('[data-toggle="sidebar"]').forEach(function(sidebarToggle) {
+            sidebarToggle.addEventListener('click', closeSidebarSections, true);
+        });
+
+        const sidebarStateObserver = new MutationObserver(function() {
+            if (document.body.classList.contains('sidebar-mini') || document.body.classList.contains('sidebar-gone')) {
+                closeSidebarSections();
+            }
+        });
+        sidebarStateObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+        if (document.body.classList.contains('sidebar-mini') || document.body.classList.contains('sidebar-gone')) {
+            closeSidebarSections();
+        }
+
         $(document).on('click', '.deleteForm', function() {
             const url = $(this).data('url');
             $('#deleteForm').attr('action', url);

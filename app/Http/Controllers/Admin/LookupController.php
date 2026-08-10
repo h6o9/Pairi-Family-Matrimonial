@@ -54,8 +54,10 @@ class LookupController extends Controller
                 'row_number' => $start + $index + 1,
                 'name' => e($item->name),
                 'status' => '<span class="badge badge-'.$badgeClass.'">'.e(ucfirst($item->status)).'</span>',
-                'action' => '<a href="'.$editUrl.'" class="btn btn-info btn-sm" title="Edit"><i class="fa fa-edit"></i></a> '
-                    .'<a data-bs-toggle="modal" data-bs-target="#deleteModal" href="javascript:;" class="btn btn-danger btn-sm deleteForm" data-url="'.$deleteUrl.'" title="Delete"><i class="fa fa-trash"></i></a>',
+                'action' => '<div class="table-actions">'
+                    .'<a href="'.$editUrl.'" class="btn btn-info btn-sm" title="Edit"><i class="fa fa-edit"></i></a>'
+                    .'<a data-bs-toggle="modal" data-bs-target="#deleteModal" href="javascript:;" class="btn btn-danger btn-sm deleteForm" data-url="'.$deleteUrl.'" title="Delete"><i class="fa fa-trash"></i></a>'
+                    .'</div>',
             ];
         });
 
@@ -154,6 +156,7 @@ class LookupController extends Controller
     {
         Cache::forget('api_lookup_'.$type);
         Cache::forget('api_profile_options');
+        Cache::forget('marriage_bureau_form_lookups');
 
         if ($type === 'countries') {
             Cache::forget('api_countries');

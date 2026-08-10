@@ -34,3 +34,12 @@ input[type="password"]::-ms-clear { display: none !important; }
 <link rel="stylesheet" href="{{ asset('backend/datetimepicker/jquery.datetimepicker.css') }}">
 <link rel="stylesheet" href="{{ asset('backend/css/iziToast.min.css') }}">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/dataTables.bootstrap5.min.css">
+<style>
+.table td:last-child { white-space: nowrap !important; min-width: 82px; }
+.table td:last-child .btn {
+    display: inline-flex !important; align-items: center; justify-content: center;
+    margin: 0 3px 3px 0; vertical-align: middle;
+}
+.table-actions { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; }
+.table-actions .btn { margin: 0 !important; flex: 0 0 auto; }
+</style>

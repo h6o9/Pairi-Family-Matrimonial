@@ -44,7 +44,7 @@
                                     <option value="months" @selected(old('duration_unit', $subscription->duration_unit ?? 'days') === 'months')>Months</option>
                                 </select>
                             </div>
-                            <div class="col-md-12 form-group">
+                            <!-- <div class="col-md-12 form-group">
                                 <label>Features (read-only)</label>
                                 <ul class="list-group">
                                     @forelse($subscription->displayFeatures() as $feature)
@@ -53,7 +53,7 @@
                                         <li class="list-group-item text-muted">No features</li>
                                     @endforelse
                                 </ul>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="form-group text-right">
                             <button type="submit" class="btn btn-primary">Update Price & Duration</button>

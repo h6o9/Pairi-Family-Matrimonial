@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\Auth\NewPasswordController;
 use App\Http\Controllers\Admin\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\UserController;
@@ -53,6 +55,15 @@ $adminPrefix = config('custom.admin_login_prefix', 'admin');
         // Settings
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+
+        // FAQs and legal content
+        Route::resource('faqs', FaqController::class)->except('show');
+        Route::get('content/{type}', [ContentPageController::class, 'edit'])
+            ->whereIn('type', ['terms-conditions', 'privacy-policy'])
+            ->name('content.edit');
+        Route::put('content/{type}', [ContentPageController::class, 'update'])
+            ->whereIn('type', ['terms-conditions', 'privacy-policy'])
+            ->name('content.update');
 
         // Legacy country URL now uses the common profile lookup section.
         Route::redirect(

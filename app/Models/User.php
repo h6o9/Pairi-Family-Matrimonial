@@ -137,6 +137,11 @@ class User extends Authenticatable
         return $this->hasMany(UserNotification::class);
     }
 
+    public function marriageBureau(): BelongsTo
+    {
+        return $this->belongsTo(MarriageBureau::class);
+    }
+
     public function activeSubscription(): ?UserSubscription
     {
         return $this->subscriptions()

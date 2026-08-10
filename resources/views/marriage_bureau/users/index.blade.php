@@ -53,9 +53,11 @@
                                     <td>{{ $user->city ?? '-' }}</td>
                                     <td><span class="badge badge-success">Live on App</span></td>
                                     <td>
-                                        <a href="{{ route('marriage-bureau.users.show', $user->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
-                                        <a href="{{ route('marriage-bureau.users.edit', $user->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a>
-                                        <x-admin.delete-button class="deleteForm" data-url="{{ route('marriage-bureau.users.destroy', $user->id) }}" text="Delete" />
+                                        <div class="table-actions">
+                                            <a href="{{ route('marriage-bureau.users.show', $user->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
+                                            <a href="{{ route('marriage-bureau.users.edit', $user->id) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                            <x-admin.delete-button class="deleteForm" data-url="{{ route('marriage-bureau.users.destroy', $user->id) }}" text="Delete" />
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach

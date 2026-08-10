@@ -32,7 +32,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6 col-sm-12">
+                <!-- <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="card card-statistic-2">
                         <div class="card-icon shadow-info bg-info">
                             <i class="fas fa-user-check"></i>
@@ -42,7 +42,7 @@
                             <div class="card-body">{{ $stats['completed_profiles'] }}</div>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="card card-statistic-2">
                         <div class="card-icon shadow-warning bg-warning">
