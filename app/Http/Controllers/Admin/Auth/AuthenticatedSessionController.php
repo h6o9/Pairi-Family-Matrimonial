@@ -85,7 +85,7 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->back()->with($notification);
             }
         } else {
-            $notification = __('Admin account not found. Use: admin@pairifamily.com');
+            $notification = __('Admin Account not found');
             $notification = ['message' => $notification, 'alert-type' => 'error'];
 
             return redirect()->back()->withInput(['email' => $request->email])->with($notification);

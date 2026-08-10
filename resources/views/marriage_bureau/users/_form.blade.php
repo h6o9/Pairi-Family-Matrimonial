@@ -28,7 +28,7 @@
             </div>
             <div class="form-group col-md-6">
                 <label>Password @if($u) (Leave blank to keep current) @else <span class="text-danger">*</span> @endif</label>
-                <input type="password" name="password" class="form-control" {{ $u ? '' : 'required' }}>
+                <input type="password" name="password" class="form-control" value="" autocomplete="new-password" {{ $u ? '' : 'required' }}>
             </div>
             <div class="form-group col-md-6">
                 <label>Phone</label>
@@ -229,4 +229,16 @@
             </div>
         </div>
     </div>
+</div>
+
+<input type="hidden" name="save_action" id="save_action" value="save">
+<input type="hidden" name="active_tab" id="active_tab" value="tab-basic">
+
+<div class="mt-3 d-flex flex-wrap gap-2" id="user-form-actions">
+    <button type="submit" class="btn btn-primary" id="btn-save" data-action="save">
+        <i class="fas fa-save"></i> Save
+    </button>
+    <button type="submit" class="btn btn-outline-primary" id="btn-save-next" data-action="save_next">
+        <i class="fas fa-arrow-right"></i> Save and Next
+    </button>
 </div>

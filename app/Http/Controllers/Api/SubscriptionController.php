@@ -33,6 +33,9 @@ class SubscriptionController extends Controller
     {
         try {
             $user = $request->user();
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            $access = $accessService->access($user);
+
             $subscription = UserSubscription::with('plan')
                 ->where('user_id', $user->id)
                 ->latest()
@@ -47,6 +50,7 @@ class SubscriptionController extends Controller
                     'plan' => $freePlan ? $this->formatPlan($freePlan) : null,
                     'status' => 'free',
                     'is_active' => true,
+                    'access' => $access,
                     'message' => 'You are on the Free plan.',
                 ], 200);
             }
@@ -65,11 +69,30 @@ class SubscriptionController extends Controller
                     'cancelled_at' => $subscription->cancelled_at?->toIso8601String(),
                     'plan' => $subscription->plan ? $this->formatPlan($subscription->plan) : null,
                 ],
+                'access' => $access,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch subscription',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function access(Request $request): JsonResponse
+    {
+        try {
+            $access = app(\App\Services\SubscriptionAccessService::class)->access($request->user());
+
+            return response()->json([
+                'success' => 200,
+                'access' => $access,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch plan access',
                 'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
@@ -121,7 +144,7 @@ class SubscriptionController extends Controller
                 'status' => $status,
                 'payment_method' => $data['payment_method'] ?? null,
                 'starts_at' => $isFree ? now() : null,
-                'expires_at' => $isFree ? now()->addDays($plan->duration_days) : null,
+                'expires_at' => $isFree ? $plan->expiresAtFrom(now()) : null,
             ]);
 
             return response()->json([
@@ -225,10 +248,15 @@ class SubscriptionController extends Controller
             'name' => $plan->name,
             'price' => (float) $plan->price,
             'price_label' => 'PKR ' . number_format($plan->price, 0),
-            'duration_days' => $plan->duration_days,
+            'duration' => (int) $plan->duration_days,
+            'duration_unit' => $plan->duration_unit ?? 'days',
+            'duration_label' => $plan->durationLabel(),
+            'duration_days' => (int) $plan->duration_days,
             'type' => $plan->type,
+            'payment_status' => $plan->payment_status ?? (($plan->type === 'Free') ? 'free' : 'paid'),
             'badge' => $plan->badge,
             'features' => $features,
+            'feature_list' => $features['display'] ?? [],
             'status' => $plan->status,
         ];
     }
@@ -240,8 +268,8 @@ class SubscriptionController extends Controller
             ['key' => 'chat_limit', 'label' => 'Chats'],
             ['key' => 'boosts_per_month', 'label' => 'Profile Boosts'],
             ['key' => 'super_likes_per_day', 'label' => 'Super Likes'],
-            ['key' => 'see_who_liked', 'label' => 'See Who Liked You'],
-            ['key' => 'verified_badge', 'label' => 'Plan Badge'],
+            ['key' => 'vip_badge', 'label' => 'VIP Badge'],
+            ['key' => 'vvip_badge', 'label' => 'VVIP Badge'],
         ];
 
         $matrix = [];
@@ -260,7 +288,7 @@ class SubscriptionController extends Controller
     private function formatFeatureValue(string $key, $value): string
     {
         if ($key === 'chat_limit') {
-            return $value === null ? 'Unlimited' : ($value . '/day');
+            return $value === null ? 'Unlimited' : ('Limited (' . $value . ')');
         }
         if ($key === 'boosts_per_month') {
             return $value === null ? 'Unlimited' : ((int) $value . '/month');

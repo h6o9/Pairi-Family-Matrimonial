@@ -1402,3 +1402,23 @@ $(document).on('click', '.decrease-btn', function() {
 $(document).on('input', 'input[name="qty"]', function() {
     updateQtyPrice();
 });
+
+// Password show/hide eye icon (entire frontend)
+(function () {
+    if (document.querySelector('script[src*="password-toggle.js"]') || window.PiyariPasswordToggle) {
+        if (window.PiyariPasswordToggle) {
+            window.PiyariPasswordToggle.enhance(document);
+        }
+        return;
+    }
+    if (!document.getElementById('piyari-password-toggle-css')) {
+        var link = document.createElement('link');
+        link.id = 'piyari-password-toggle-css';
+        link.rel = 'stylesheet';
+        link.href = '/global/css/password-toggle.css';
+        document.head.appendChild(link);
+    }
+    var script = document.createElement('script');
+    script.src = '/global/js/password-toggle.js';
+    document.body.appendChild(script);
+})();

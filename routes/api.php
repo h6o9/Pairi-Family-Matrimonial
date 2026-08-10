@@ -50,6 +50,12 @@ Route::get('/', function () {
                 'POST /api/change-password',
                 'POST /api/logout',
             ],
+            'notifications' => [
+                'GET /api/notifications',
+                'POST /api/notifications/{id}/read',
+                'POST /api/notifications/read-all',
+                'DELETE /api/notifications/clear-all',
+            ],
             'lookup' => [
                 'GET /api/countries',
                 'GET /api/profile-options',
@@ -61,6 +67,14 @@ Route::get('/', function () {
 // Lookup (public)
 Route::get('/countries', [LookupController::class, 'countries']);
 Route::get('/profile-options', [LookupController::class, 'profileOptions']);
+Route::get('/lookups/{type}', [LookupController::class, 'lookup']);
+foreach (array_keys(config('profile_lookups', [])) as $lookupType) {
+    if ($lookupType === 'countries') {
+        continue;
+    }
+
+    Route::get('/'.$lookupType, [LookupController::class, 'lookup'])->defaults('type', $lookupType);
+}
 Route::get('/referrals/resolve/{referralCode}', [ReferralController::class, 'resolve'])
     ->where('referralCode', '[A-Z0-9]{8}');
 
@@ -115,6 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Subscriptions and Referrals
     Route::get('/subscriptions', [\App\Http\Controllers\Api\SubscriptionController::class, 'index']);
     Route::get('/subscriptions/my-plan', [\App\Http\Controllers\Api\SubscriptionController::class, 'myPlan']);
+    Route::get('/subscriptions/access', [\App\Http\Controllers\Api\SubscriptionController::class, 'access']);
     Route::post('/subscriptions/subscribe', [\App\Http\Controllers\Api\SubscriptionController::class, 'subscribe']);
     Route::post('/subscriptions/upload-payment', [\App\Http\Controllers\Api\SubscriptionController::class, 'uploadPayment']);
     Route::post('/subscriptions/cancel', [\App\Http\Controllers\Api\SubscriptionController::class, 'cancel']);
@@ -129,7 +144,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/settings/visibility', [SettingsController::class, 'updateVisibility']);
     Route::post('/account/deactivate', [SettingsController::class, 'deactivate']);
     Route::post('/account/delete', [SettingsController::class, 'deleteAccount']);
-    Route::get('/notifications', [SettingsController::class, 'notifications']);
+
+    // Notifications (DB-backed)
+    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead'])->whereNumber('id');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/clear-all', [\App\Http\Controllers\Api\NotificationController::class, 'clearAll']);
 
     // Admin Routes
     Route::prefix('admin')->group(function () {

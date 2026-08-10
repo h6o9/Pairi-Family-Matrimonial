@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active',
             ]
         );
+
+        $this->call(SubscriptionPlansSeeder::class);
     }
 }

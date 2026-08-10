@@ -14,6 +14,21 @@
         <link href="{{ asset('backend/css/bootstrap-social.css') }}" rel="stylesheet">
         <link href="{{ asset('backend/css/components.css') }}?v={{ $setting?->version }}" rel="stylesheet">
         <link href="{{ asset('global/toastr/toastr.min.css') }}" rel="stylesheet">
+        <link href="{{ asset('global/css/password-toggle.css') }}?v=2" rel="stylesheet">
+        <style>
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear { display: none !important; }
+        .password-input-wrap { position: relative !important; display: block !important; width: 100% !important; }
+        .password-input-wrap > input { padding-right: 2.75rem !important; width: 100% !important; }
+        .password-input-wrap > .password-toggle-btn {
+            position: absolute !important; right: 0.75rem !important; top: 50% !important; left: auto !important;
+            transform: translateY(-50%) !important; border: 0 !important; background: transparent !important;
+            color: #6c757d !important; padding: 0 !important; margin: 0 !important; cursor: pointer !important;
+            z-index: 5 !important; width: 1.75rem !important; height: 1.75rem !important;
+            display: inline-flex !important; align-items: center !important; justify-content: center !important;
+            appearance: none !important; -webkit-appearance: none !important; box-shadow: none !important;
+        }
+        </style>
         <link href="{{ asset('backend/css/bootstrap4-toggle.min.css') }}" rel="stylesheet">
         <link href="{{ asset('backend/css/dev.css') }}?v={{ $setting?->version }}" rel="stylesheet">
         @if (session()->has('text_direction') && session()->get('text_direction') !== 'ltr')
@@ -46,6 +61,7 @@
         <script src="{{ asset('backend/js/scripts.js') }}?v={{ $setting?->version }}"></script>
         <script src="{{ asset('global/toastr/toastr.min.js') }}"></script>
         <script src="{{ asset('backend/js/modules-toastr.js') }}"></script>
+        <script src="{{ asset('global/js/password-toggle.js') }}"></script>
 
         <script>
             @if (Session::has('message'))

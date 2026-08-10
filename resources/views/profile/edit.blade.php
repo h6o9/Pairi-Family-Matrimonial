@@ -62,17 +62,19 @@
         @csrf
         <div class="form-group inflanar-form-input">
             <label>{{ __('Current Password') }}*</label>
-            <input class="inflanar-signin__form-input" id="password-field" type="password" name="current_password">
+            <input class="inflanar-signin__form-input" id="current_password" type="password" name="current_password">
         </div>
         <div class="form-group inflanar-form-input mg-top-20">
             <label>{{ __('New Password') }}*</label>
-            <input class="inflanar-signin__form-input" placeholder="" id="password-field" type="password" name="password">
+            <input class="inflanar-signin__form-input" placeholder="" id="new_password" type="password" name="password">
         </div>
         <div class="form-group inflanar-form-input mg-top-20">
             <label>{{ __('Confirm Password') }}*</label>
-            <input class="inflanar-signin__form-input" placeholder="" id="password-field" type="password"
+            <input class="inflanar-signin__form-input" placeholder="" id="confirm_password" type="password"
                 name="password_confirmation">
         </div>
+        <link rel="stylesheet" href="{{ asset('global/css/password-toggle.css') }}">
+        <script src="{{ asset('global/js/password-toggle.js') }}"></script>
         <div class="inflanar__item-button--group mg-top-50">
             <button class="inflanar-btn" type="submit">{{ __('Update Password') }}</button>
             <a href="" class="inflanar-btn inflanar-btn__cancel"><span>{{ __('Cancel') }}</span></a>

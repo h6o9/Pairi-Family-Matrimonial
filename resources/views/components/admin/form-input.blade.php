@@ -21,8 +21,19 @@
     </label>
 @endif
 
-<input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}" value="{{ $value }}"
-    {{ $attributes->merge(['class' => 'form-control']) }}>
+@if ($type === 'password')
+    <div class="password-input-wrap">
+        <input id="{{ $id }}" name="{{ $name }}" type="password" value="{{ $value }}"
+            data-password-toggle-ready="1"
+            {{ $attributes->merge(['class' => 'form-control']) }}>
+        <button type="button" class="password-toggle-btn" aria-label="Show password" tabindex="0">
+            <i class="fas fa-eye-slash" aria-hidden="true"></i>
+        </button>
+    </div>
+@else
+    <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}" value="{{ $value }}"
+        {{ $attributes->merge(['class' => 'form-control']) }}>
+@endif
 
 @error($name)
     <span class="text-danger">{{ $message }}</span>

@@ -31,15 +31,14 @@
                     <label>Email</label>
                     <input type="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg btn-block">Send Reset Link</button>
-            </form>
+ <button type="submit" class="btn btn-lg btn-block" style="background-color:#6e0016; color:#ffff; margin-top:25px;">{{ __('Send Reset Link') }}</button>            </form>
 
             <div class="text-center mt-4">
                 <a href="{{ route('marriage-bureau.login') }}" class="text-primary">Back to Login</a>
             </div>
         </div>
     </section>
-    <script src="{{ asset('backend/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('global/js/jquery-3.7.1.min.js') }}"></script>
     @include('partials.toastr-scripts')
 </body>
 </html>

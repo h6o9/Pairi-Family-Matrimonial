@@ -10,30 +10,27 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $subscriptions = Subscription::all();
+        $subscriptions = Subscription::whereIn('type', ['Free', 'VIP', 'VVIP'])
+            ->orderByRaw("FIELD(type, 'Free', 'VIP', 'VVIP')")
+            ->get();
+
         return view('admin.subscriptions.index', compact('subscriptions'));
     }
 
     public function create()
     {
-        return view('admin.subscriptions.create');
+        return redirect()->route('admin.subscriptions.index')->with([
+            'message' => 'New subscription plans cannot be created. Only Free, VIP and VVIP plans are allowed.',
+            'alert-type' => 'error',
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'duration_days' => 'required|integer|min:1',
-            'type' => 'required|string',
-            'status' => 'nullable|string|in:active,inactive',
+        return redirect()->route('admin.subscriptions.index')->with([
+            'message' => 'New subscription plans cannot be created.',
+            'alert-type' => 'error',
         ]);
-        
-        $data['status'] = $data['status'] ?? 'active';
-
-        Subscription::create($data);
-
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription created successfully.');
     }
 
     public function edit(Subscription $subscription)
@@ -44,23 +41,29 @@ class SubscriptionController extends Controller
     public function update(Request $request, Subscription $subscription)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'duration_days' => 'required|integer|min:1',
-            'type' => 'required|string',
-            'status' => 'nullable|string|in:active,inactive',
+            'duration_unit' => 'required|in:days,months',
         ]);
-        
-        $data['status'] = $data['status'] ?? 'active';
+
+        // Keep Free plan price at 0
+        if ($subscription->type === 'Free') {
+            $data['price'] = 0;
+        }
 
         $subscription->update($data);
 
-        return redirect()->route('admin.subscriptions.index')->with('success', 'Subscription updated successfully.');
+        return redirect()->route('admin.subscriptions.index')->with([
+            'message' => 'Subscription updated successfully.',
+            'alert-type' => 'success',
+        ]);
     }
 
     public function destroy(Subscription $subscription)
     {
-        $subscription->delete();
-        return redirect()->route('admin.subscriptions.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
+        return redirect()->route('admin.subscriptions.index')->with([
+            'message' => 'Subscription plans cannot be deleted.',
+            'alert-type' => 'error',
+        ]);
     }
 }

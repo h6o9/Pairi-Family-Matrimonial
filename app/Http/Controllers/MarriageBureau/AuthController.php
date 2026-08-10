@@ -64,6 +64,10 @@ class AuthController extends Controller
 
         MarriageBureau::create($data);
 
+        // #region agent log
+        file_put_contents(base_path('debug-64ce68.log'), json_encode(['sessionId'=>'64ce68','runId'=>'post-fix','hypothesisId'=>'MB1','location'=>'AuthController.php:register','message'=>'Register flash set before redirect','data'=>['flashKey'=>'message','alertType'=>'success','text'=>'Registration successful. Please login to continue.'],'timestamp'=>round(microtime(true)*1000)])."\n", FILE_APPEND);
+        // #endregion
+
         return redirect()->route('marriage-bureau.login')->with([
             'message' => 'Registration successful. Please login to continue.',
             'alert-type' => 'success',
@@ -85,8 +89,15 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('marriage_bureau')->logout();
+
+        // Invalidate then flash on the fresh session so the toast survives redirect
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // #region agent log
+        file_put_contents(base_path('debug-64ce68.log'), json_encode(['sessionId'=>'64ce68','runId'=>'post-fix','hypothesisId'=>'MB2','location'=>'AuthController.php:logout','message'=>'Logout flash set after session regenerate','data'=>['flashKey'=>'message','alertType'=>'success','text'=>'Logged out successfully.'],'timestamp'=>round(microtime(true)*1000)])."\n", FILE_APPEND);
+        // #endregion
+
         return redirect()->route('marriage-bureau.login')->with([
             'message' => 'Logged out successfully.',
             'alert-type' => 'success',

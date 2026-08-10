@@ -33,7 +33,7 @@
                 <label for="password_confirmation">{{ __('Confirm Password') }}</label>
                 <input id="password_confirmation" type="password" class="form-control" name="password_confirmation" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block">{{ __('Reset Password') }}</button>
+            <button type="submit" class="btn btn-lg btn-block" style="background-color:#6e0016; color:#ffff;">{{ __('Reset Password') }}</button>
         </form>
 
         <div class="text-center mt-4">

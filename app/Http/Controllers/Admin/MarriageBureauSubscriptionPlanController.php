@@ -3,90 +3,63 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MarriageBureauSubscriptionPlan;
 use Illuminate\Http\Request;
 
 class MarriageBureauSubscriptionPlanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $plans = \App\Models\MarriageBureauSubscriptionPlan::latest()->get();
+        $plans = MarriageBureauSubscriptionPlan::latest()->get();
+
         return view('admin.marriage_bureau_subscription_plans.index', compact('plans'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        if (\App\Models\MarriageBureauSubscriptionPlan::exists()) {
-            return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Only one subscription plan is allowed. Please edit the existing plan instead.', 'alert-type' => 'error']);
-        }
-
-        return view('admin.marriage_bureau_subscription_plans.create');
+        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with([
+            'message' => 'Only one MB subscription plan is allowed. Please edit the existing plan.',
+            'alert-type' => 'error',
+        ]);
     }
 
     public function store(Request $request)
     {
-        if (\App\Models\MarriageBureauSubscriptionPlan::exists()) {
-            return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Only one subscription plan is allowed. Please edit the existing plan instead.', 'alert-type' => 'error']);
-        }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'payment_status' => 'required|in:free,paid',
-            'features' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with([
+            'message' => 'Creating new MB subscription plans is disabled.',
+            'alert-type' => 'error',
         ]);
-
-        $validated['features'] = $this->parseFeatures($request->input('features'));
-
-        \App\Models\MarriageBureauSubscriptionPlan::create($validated);
-        
-        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Plan created successfully.', 'alert-type' => 'success']);
     }
 
     public function edit(string $id)
     {
-        $marriage_bureau_subscription = \App\Models\MarriageBureauSubscriptionPlan::findOrFail($id);
+        $marriage_bureau_subscription = MarriageBureauSubscriptionPlan::findOrFail($id);
+
         return view('admin.marriage_bureau_subscription_plans.edit', compact('marriage_bureau_subscription'));
     }
 
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'payment_status' => 'required|in:free,paid',
-            'features' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'duration_days' => 'required|integer|min:1',
+            'duration_unit' => 'required|in:days,months',
         ]);
 
-        $validated['features'] = $this->parseFeatures($request->input('features'));
-
-        $plan = \App\Models\MarriageBureauSubscriptionPlan::findOrFail($id);
+        $plan = MarriageBureauSubscriptionPlan::findOrFail($id);
         $plan->update($validated);
 
-        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Plan updated successfully.', 'alert-type' => 'success']);
-    }
-
-    private function parseFeatures(?string $features): array
-    {
-        if (!$features) {
-            return [];
-        }
-
-        return array_values(array_filter(array_map('trim', explode("\n", $features))));
+        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with([
+            'message' => 'Plan updated successfully.',
+            'alert-type' => 'success',
+        ]);
     }
 
     public function destroy(string $id)
     {
-        $plan = \App\Models\MarriageBureauSubscriptionPlan::findOrFail($id);
-        $plan->delete();
-
-        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with(['message' => 'Deleted successfully.', 'alert-type' => 'success']);
+        return redirect()->route('admin.marriage-bureau-subscriptions.index')->with([
+            'message' => 'MB subscription plan cannot be deleted.',
+            'alert-type' => 'error',
+        ]);
     }
 }

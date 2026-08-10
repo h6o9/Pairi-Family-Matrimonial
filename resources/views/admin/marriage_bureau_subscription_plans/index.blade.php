@@ -12,21 +12,12 @@
         </div>
 
         <div class="section-body">
+            {{-- Create disabled — only one fixed MB plan
             @if($plans->isEmpty())
             <a href="{{ route('admin.marriage-bureau-subscriptions.create') }}" class="btn btn-primary mb-4"><i class="fas fa-plus"></i> Create New Plan</a>
-            @else
-            <p class="text-muted">Only one subscription plan is supported. Edit it below to change what marriage bureaus see.</p>
             @endif
-            
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            --}}
+            <p class="text-muted mb-3">Only one MB subscription plan. Edit <strong>Price</strong> and <strong>Duration</strong> only. Features stay full app access (read-only).</p>
 
             <div class="card">
                 <div class="card-body">
@@ -37,29 +28,47 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Price</th>
-                                    <th>Status</th>
+                                    <th>Duration</th>
+                                    <th>Payment</th>
+                                    <th>Features</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($plans as $plan)
+                                @forelse($plans as $plan)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $plan->name }}</td>
                                     <td>PKR {{ number_format($plan->price) }}</td>
+                                    <td>{{ $plan->durationLabel() }}</td>
                                     <td>
-                                        @if($plan->status == 'active')
-                                            <span class="badge badge-success">Active</span>
-                                        @else
-                                            <span class="badge badge-danger">Inactive</span>
-                                        @endif
+                                        <span class="badge badge-{{ $plan->payment_status === 'free' ? 'secondary' : 'success' }}">
+                                            {{ ucfirst($plan->payment_status ?? 'paid') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <ul class="mb-0 pl-3">
+                                            @foreach(($plan->features ?? []) as $feature)
+                                                <li>{{ $feature }}</li>
+                                            @endforeach
+                                        </ul>
                                     </td>
                                     <td>
                                         <a href="{{ route('admin.marriage-bureau-subscriptions.edit', $plan->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>
-                                        <x-admin.delete-button class="deleteForm" data-url="{{ route('admin.marriage-bureau-subscriptions.destroy', $plan->id) }}" title="Delete" />
+                                        {{-- Delete disabled --}}
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td></td>
+                                    <td>No MB plan found. Run SubscriptionPlansSeeder.</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -68,5 +77,4 @@
         </div>
     </section>
 </div>
-<x-admin.delete-modal />
 @stop

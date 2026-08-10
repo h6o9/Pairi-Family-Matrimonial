@@ -9,10 +9,6 @@
             <h1>System Settings</h1>
         </div>
         <div class="section-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
             <div class="card mb-3">
                 <div class="card-header">
                     <h4>Invite & Earn Settings</h4>
@@ -20,6 +16,7 @@
                 <div class="card-body">
                     <form action="{{ route('admin.settings.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="section" value="invite">
                         <div class="form-group row">
                             <label class="col-sm-3 col-form-label">Reward Points per Registration</label>
                             <div class="col-sm-6">
@@ -27,9 +24,34 @@
                                 <small class="text-muted">Points awarded when a referred user completes email verification.</small>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">1 Point Value (PKR)</label>
+                            <div class="col-sm-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">PKR</span>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="point_value_pkr" value="{{ old('point_value_pkr', $settings['point_value_pkr'] ?? 1) }}" required>
+                                </div>
+                                <small class="text-muted">Example: value 2 means 1 reward point = PKR 2.</small>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-                        <hr>
-                        <h5>Redeem Rewards (Points Cost)</h5>
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h4>Redeem Rewards (Points Cost)</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.settings.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="section" value="redeem">
 
                         <div class="form-group row">
                             <label class="col-sm-3 col-form-label">VIP Plan (1 Month)</label>
@@ -56,8 +78,8 @@
                                 <small class="text-muted">Boost duration (days)</small>
                             </div>
                         </div>
-                        
-                        <div class="form-group row">
+
+                        <div class="form-group row mb-0">
                             <div class="col-sm-3"></div>
                             <div class="col-sm-6">
                                 <button type="submit" class="btn btn-primary">Save Settings</button>

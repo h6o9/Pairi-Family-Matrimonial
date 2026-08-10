@@ -16,18 +16,41 @@ class SettingController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'invite_reward_points' => 'required|numeric|min:0',
-            'redeem_vip_points' => 'required|numeric|min:0',
-            'redeem_vvip_points' => 'required|numeric|min:0',
-            'redeem_boost_points' => 'required|numeric|min:0',
-            'redeem_boost_days' => 'required|integer|min:1',
-        ]);
+        $section = $request->input('section', 'all');
+
+        if ($section === 'invite') {
+            $data = $request->validate([
+                'invite_reward_points' => 'required|numeric|min:0',
+                'point_value_pkr' => 'required|numeric|min:0',
+            ]);
+            $message = 'Reward points and PKR value updated successfully.';
+        } elseif ($section === 'redeem') {
+            $data = $request->validate([
+                'redeem_vip_points' => 'required|numeric|min:0',
+                'redeem_vvip_points' => 'required|numeric|min:0',
+                'redeem_boost_points' => 'required|numeric|min:0',
+                'redeem_boost_days' => 'required|integer|min:1',
+            ]);
+            $message = 'Redeem settings updated successfully.';
+        } else {
+            $data = $request->validate([
+                'invite_reward_points' => 'required|numeric|min:0',
+                'point_value_pkr' => 'required|numeric|min:0',
+                'redeem_vip_points' => 'required|numeric|min:0',
+                'redeem_vvip_points' => 'required|numeric|min:0',
+                'redeem_boost_points' => 'required|numeric|min:0',
+                'redeem_boost_days' => 'required|integer|min:1',
+            ]);
+            $message = 'Settings updated successfully.';
+        }
 
         foreach ($data as $key => $value) {
             SystemSetting::setVal($key, $value);
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Settings updated successfully.');
+        return redirect()->route('admin.settings.index')->with([
+            'message' => $message,
+            'alert-type' => 'success',
+        ]);
     }
 }

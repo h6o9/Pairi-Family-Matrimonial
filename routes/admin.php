@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\Auth\NewPasswordController;
 use App\Http\Controllers\Admin\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,10 @@ $adminPrefix = config('custom.admin_login_prefix', 'admin');
         // Subscriptions
         Route::resource('subscriptions', \App\Http\Controllers\Admin\SubscriptionController::class);
 
+        // Notifications
+        Route::get('notifications/users-search', [\App\Http\Controllers\Admin\NotificationController::class, 'searchUsers'])->name('notifications.users-search');
+        Route::resource('notifications', \App\Http\Controllers\Admin\NotificationController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+
         // Marriage Bureau Management
         Route::resource('marriage-bureaus', \App\Http\Controllers\Admin\MarriageBureauController::class);
         Route::post('marriage-bureaus/{marriage_bureau}/verify-subscription', [\App\Http\Controllers\Admin\MarriageBureauController::class, 'verifySubscription'])->name('marriage-bureaus.verify-subscription');
@@ -48,6 +53,23 @@ $adminPrefix = config('custom.admin_login_prefix', 'admin');
         // Settings
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+
+        // Legacy country URL now uses the common profile lookup section.
+        Route::redirect(
+            'countries',
+            '/'.config('custom.admin_login_prefix', 'admin').'/lookups/countries'
+        )->name('countries.index');
+
+        // Profile lookup sections
+        Route::prefix('lookups/{type}')->name('lookups.')->controller(LookupController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('data', 'data')->name('data');
+            Route::get('create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('{id}/edit', 'edit')->whereNumber('id')->name('edit');
+            Route::put('{id}', 'update')->whereNumber('id')->name('update');
+            Route::delete('{id}', 'destroy')->whereNumber('id')->name('destroy');
+        });
 
     });
 });

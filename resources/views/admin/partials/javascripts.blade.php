@@ -19,12 +19,19 @@
 <script src="{{ asset('backend/js/jquery.uploadPreview.min.js') }}"></script>
 <script src="{{ asset('website/js/Font-Awesome.js') }}"></script>
 <script src="{{ asset('backend/js/custom.js') }}?v={{ $setting?->version }}"></script>
+<script src="{{ asset('global/js/password-toggle.js') }}?v=2"></script>
 <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
+    // #region agent log
+    fetch('http://127.0.0.1:7559/ingest/b21f2b75-4e25-47af-b7e2-c54d21d8b8b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'64ce68'},body:JSON.stringify({sessionId:'64ce68',runId:'post-fix',hypothesisId:'C',location:'javascripts.blade.php:toastr-check',message:'Toastr + flash state on page load',data:{toastrLoaded:typeof toastr!=='undefined',hasMessage:@json(session()->has('message')),hasSuccess:@json(session()->has('success')),alertType:@json(Session::get('alert-type')),messageText:@json(Session::get('message')),successText:@json(Session::get('success')),passwordInputs:document.querySelectorAll('input[type=password]').length,passwordToggles:document.querySelectorAll('.password-toggle-btn').length},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     @session('message')
     var type = "{{ Session::get('alert-type', 'info') }}"
+    // #region agent log
+    fetch('http://127.0.0.1:7559/ingest/b21f2b75-4e25-47af-b7e2-c54d21d8b8b5',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'64ce68'},body:JSON.stringify({sessionId:'64ce68',runId:'post-fix',hypothesisId:'D',location:'javascripts.blade.php:toastr-fire',message:'Toastr branch will fire',data:{type:type,value:@json($value)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     switch (type) {
         case 'info':
             toastr.info("{{ $value }}");

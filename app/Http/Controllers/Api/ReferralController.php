@@ -82,6 +82,7 @@ class ReferralController extends Controller
             $totalRegistered = $user->referrals()->count();
             $rewardPoints = $user->reward_points;
             $rewardPerRegistration = (int) SystemSetting::getVal('invite_reward_points', 50);
+            $pointValuePkr = (float) SystemSetting::getVal('point_value_pkr', 1);
 
             return response()->json([
                 'success' => 200,
@@ -90,6 +91,8 @@ class ReferralController extends Controller
                 'total_registered' => $totalRegistered,
                 'reward_points' => $rewardPoints,
                 'reward_per_registration' => $rewardPerRegistration,
+                'point_value_pkr' => $pointValuePkr,
+                'reward_value_pkr' => round($rewardPoints * $pointValuePkr, 2),
                 'conversion_rate' => "1 Registration = {$rewardPerRegistration} pts",
             ], 200);
         } catch (\Exception $e) {
@@ -135,10 +138,13 @@ class ReferralController extends Controller
         try {
             $user = $request->user();
             $catalog = $this->rewardCatalog();
+            $pointValuePkr = (float) SystemSetting::getVal('point_value_pkr', 1);
 
             return response()->json([
                 'success' => 200,
                 'total_points' => $user->reward_points,
+                'point_value_pkr' => $pointValuePkr,
+                'total_value_pkr' => round($user->reward_points * $pointValuePkr, 2),
                 'rewards' => collect($catalog)->map(function ($item) use ($user) {
                     return array_merge($item, [
                         'can_redeem' => $user->reward_points >= $item['points_cost'],

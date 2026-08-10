@@ -26,7 +26,7 @@
                 <label for="email">{{ __('Email') }}</label>
                 <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" required autofocus>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg btn-block">{{ __('Send Reset Link') }}</button>
+            <button type="submit" class="btn btn-lg btn-block" style="background-color:#6e0016; color:#ffff;">{{ __('Send Reset Link') }}</button>
         </form>
 
         <div class="text-center mt-4">

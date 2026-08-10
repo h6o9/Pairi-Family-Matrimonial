@@ -20,34 +20,43 @@
                         <div class="row">
                             <div class="col-md-6 form-group">
                                 <label>Plan Name</label>
-                                <input type="text" name="name" class="form-control" value="{{ $subscription->name }}" required>
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label>Price (PKR)</label>
-                                <input type="number" step="0.01" name="price" class="form-control" value="{{ $subscription->price }}" required>
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label>Duration (Days)</label>
-                                <input type="number" name="duration_days" class="form-control" value="{{ $subscription->duration_days }}" required>
-                            </div>
-                            <div class="col-md-6 form-group">
-                                <label>Type</label>
-                                <select name="type" class="form-control">
-                                    <option value="VIP" @selected($subscription->type === 'VIP')>VIP</option>
-                                    <option value="VVIP" @selected($subscription->type === 'VVIP')>VVIP</option>
-                                    <option value="Free" @selected($subscription->type === 'Free')>Free</option>
-                                </select>
+                                <input type="text" class="form-control" value="{{ $subscription->name }}" readonly>
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Status</label>
-                                <select name="status" class="form-control">
-                                    <option value="active" @selected($subscription->status === 'active')>Active</option>
-                                    <option value="inactive" @selected($subscription->status === 'inactive')>Inactive</option>
+                                <input type="text" class="form-control" value="{{ $subscription->payment_status === 'free' ? 'Free (non paid)' : 'Paid' }}" readonly>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Price (PKR) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="price" class="form-control" value="{{ old('price', $subscription->price) }}" required min="0" @if($subscription->type === 'Free') readonly @endif>
+                                @if($subscription->type === 'Free')
+                                    <small class="text-muted">Free plan price is always 0.</small>
+                                @endif
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Duration <span class="text-danger">*</span></label>
+                                <input type="number" name="duration_days" class="form-control" value="{{ old('duration_days', $subscription->duration_days) }}" required min="1">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Duration Unit <span class="text-danger">*</span></label>
+                                <select name="duration_unit" class="form-control" required>
+                                    <option value="days" @selected(old('duration_unit', $subscription->duration_unit ?? 'days') === 'days')>Days</option>
+                                    <option value="months" @selected(old('duration_unit', $subscription->duration_unit ?? 'days') === 'months')>Months</option>
                                 </select>
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label>Features (read-only)</label>
+                                <ul class="list-group">
+                                    @forelse($subscription->displayFeatures() as $feature)
+                                        <li class="list-group-item">{{ $feature }}</li>
+                                    @empty
+                                        <li class="list-group-item text-muted">No features</li>
+                                    @endforelse
+                                </ul>
                             </div>
                         </div>
                         <div class="form-group text-right">
-                            <button type="submit" class="btn btn-primary">Update Subscription</button>
+                            <button type="submit" class="btn btn-primary">Update Price & Duration</button>
                         </div>
                     </form>
                 </div>

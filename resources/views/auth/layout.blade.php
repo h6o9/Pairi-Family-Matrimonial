@@ -31,6 +31,7 @@
         <link type="image/png" href="{{ asset('website/images/favicon.webp') }}" rel="icon">
 
         @include('website.layouts.css.styles')
+        <link rel="stylesheet" href="{{ asset('global/css/password-toggle.css') }}">
 
         <script src="{{ asset('website/js/jquery-3.7.1.min.js') }}"></script>
 
@@ -79,6 +80,7 @@
         @yield('content')
 
         @include('website.layouts.js.scripts', ['setting' => $setting, 'customCode' => $customCode])
+        <script src="{{ asset('global/js/password-toggle.js') }}"></script>
     </body>
 
 </html>

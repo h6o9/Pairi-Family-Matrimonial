@@ -25,10 +25,9 @@
             @endif
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('marriage-bureau.users.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="mb-user-form" action="{{ route('marriage-bureau.users.store') }}" method="POST" enctype="multipart/form-data" autocomplete="off">
                         @csrf
                         @include('marriage_bureau.users._form', ['user' => null])
-                        <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save"></i> Save User</button>
                     </form>
                 </div>
             </div>
@@ -44,6 +43,14 @@
             placeholder: 'Select languages',
             width: '100%'
         });
+
+        // Prevent browser autofill from filling password on create
+        var $password = $('#mb-user-form input[name="password"]');
+        $password.val('');
+        setTimeout(function () { $password.val(''); }, 100);
+
+        initMbUserFormTabs();
     });
 </script>
+@include('marriage_bureau.users._form_tabs_js')
 @endpush

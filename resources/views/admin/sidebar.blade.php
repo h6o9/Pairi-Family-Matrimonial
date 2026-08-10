@@ -69,6 +69,57 @@
     text-align: center;
     color: inherit;
 }
+
+.sidebar-menu > li {
+    border-bottom: 1px solid #eeeeee;
+}
+
+.sidebar-group-toggle {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sidebar-group-toggle .menu-caret {
+    width: 16px;
+    margin-right: 0;
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+
+.sidebar-group-toggle .minus-icon,
+.sidebar-group-toggle[aria-expanded="true"] .plus-icon {
+    display: none;
+}
+
+.sidebar-group-toggle[aria-expanded="true"] .minus-icon {
+    display: inline-block;
+}
+
+.sidebar-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 6px;
+    background: #fafafa;
+}
+
+.sidebar-submenu li a {
+    padding: 9px 15px 9px 45px;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-submenu li a::before {
+    content: "\203A";
+    margin-right: 10px;
+    color: #9a9a9a;
+}
+
+.sidebar-submenu li a.active {
+    color: #7B1E3A;
+    background: #f2e7eb;
+    border-left-color: #7B1E3A;
+    font-weight: 600;
+}
 </style>
 
 <div class="main-sidebar">
@@ -79,51 +130,88 @@
             </a>
         </div>
 
+        @php
+            $usersOpen = request()->routeIs('admin.users.*');
+            $featuresOpen = request()->routeIs('admin.subscriptions.*', 'admin.notifications.*');
+            $marriageBureauOpen = request()->routeIs('admin.marriage-bureaus.*', 'admin.marriage-bureau-subscriptions.*');
+            $profileSettingsOpen = request()->routeIs('admin.lookups.*');
+            $configurationOpen = request()->routeIs('admin.settings.*');
+        @endphp
+
         <ul class="sidebar-menu">
-            <li class="menu-header">{{ __('Dashboard') }}</li>
-            <li class="{{ isRoute('admin.dashboard', 'active') }}">
-                <a href="{{ route('admin.dashboard') }}">
+            <li>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>{{ __('Dashboard') }}</span>
                 </a>
             </li>
 
-            <li class="menu-header">{{ __('Users') }}</li>
-            <li class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.users.index') }}">
+            <li>
+                <a class="sidebar-group-toggle" data-bs-toggle="collapse" href="#usersMenu" role="button" aria-expanded="{{ $usersOpen ? 'true' : 'false' }}" aria-controls="usersMenu">
                     <i class="fas fa-user-friends"></i>
-                    <span>{{ __('All Users') }}</span>
+                    <span>{{ __('Users') }}</span>
+                    <i class="fas fa-plus menu-caret plus-icon"></i>
+                    <i class="fas fa-minus menu-caret minus-icon"></i>
                 </a>
+                <ul id="usersMenu" class="sidebar-submenu collapse {{ $usersOpen ? 'show' : '' }}">
+                    <li><a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">{{ __('All Users') }}</a></li>
+                </ul>
             </li>
 
-            <li class="menu-header">{{ __('Features') }}</li>
-            <li class="{{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.subscriptions.index') }}">
-                    <i class="fas fa-gem"></i>
-                    <span>{{ __('Subscriptions') }}</span>
+            <li>
+                <a class="sidebar-group-toggle" data-bs-toggle="collapse" href="#featuresMenu" role="button" aria-expanded="{{ $featuresOpen ? 'true' : 'false' }}" aria-controls="featuresMenu">
+                    <i class="fas fa-layer-group"></i>
+                    <span>{{ __('Features') }}</span>
+                    <i class="fas fa-plus menu-caret plus-icon"></i>
+                    <i class="fas fa-minus menu-caret minus-icon"></i>
                 </a>
+                <ul id="featuresMenu" class="sidebar-submenu collapse {{ $featuresOpen ? 'show' : '' }}">
+                    <li><a href="{{ route('admin.subscriptions.index') }}" class="{{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">{{ __('Subscriptions') }}</a></li>
+                    <li><a href="{{ route('admin.notifications.index') }}" class="{{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">{{ __('Notifications') }}</a></li>
+                </ul>
             </li>
 
-            <li class="menu-header">{{ __('Marriage Bureau Panel') }}</li>
-            <li class="{{ request()->routeIs('admin.marriage-bureaus.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.marriage-bureaus.index') }}">
+            <li>
+                <a class="sidebar-group-toggle" data-bs-toggle="collapse" href="#marriageBureauMenu" role="button" aria-expanded="{{ $marriageBureauOpen ? 'true' : 'false' }}" aria-controls="marriageBureauMenu">
                     <i class="fas fa-building"></i>
-                    <span>{{ __('Marriage Bureaus') }}</span>
+                    <span>{{ __('Marriage Bureau') }}</span>
+                    <i class="fas fa-plus menu-caret plus-icon"></i>
+                    <i class="fas fa-minus menu-caret minus-icon"></i>
                 </a>
+                <ul id="marriageBureauMenu" class="sidebar-submenu collapse {{ $marriageBureauOpen ? 'show' : '' }}">
+                    <li><a href="{{ route('admin.marriage-bureaus.index') }}" class="{{ request()->routeIs('admin.marriage-bureaus.*') ? 'active' : '' }}">{{ __('Marriage Bureaus') }}</a></li>
+                    <li><a href="{{ route('admin.marriage-bureau-subscriptions.index') }}" class="{{ request()->routeIs('admin.marriage-bureau-subscriptions.*') ? 'active' : '' }}">{{ __('MB Subscriptions') }}</a></li>
+                </ul>
             </li>
-            <li class="{{ request()->routeIs('admin.marriage-bureau-subscriptions.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.marriage-bureau-subscriptions.index') }}">
-                    <i class="fas fa-certificate"></i>
-                    <span>{{ __('MB Subscriptions') }}</span>
+
+            <li>
+                <a class="sidebar-group-toggle" data-bs-toggle="collapse" href="#profileSettingsMenu" role="button" aria-expanded="{{ $profileSettingsOpen ? 'true' : 'false' }}" aria-controls="profileSettingsMenu">
+                    <i class="fas fa-user-cog"></i>
+                    <span>{{ __('User Profile Settings') }}</span>
+                    <i class="fas fa-plus menu-caret plus-icon"></i>
+                    <i class="fas fa-minus menu-caret minus-icon"></i>
                 </a>
+                <ul id="profileSettingsMenu" class="sidebar-submenu collapse {{ $profileSettingsOpen ? 'show' : '' }}">
+                    @foreach(config('profile_lookups', []) as $lookupType => $lookup)
+                        <li>
+                            <a href="{{ route('admin.lookups.index', ['type' => $lookupType]) }}" class="{{ request()->routeIs('admin.lookups.*') && request()->route('type') === $lookupType ? 'active' : '' }}">
+                                {{ __($lookup['label']) }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
             </li>
-            
-            <li class="menu-header">{{ __('Configuration') }}</li>
-            <li class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                <a href="{{ route('admin.settings.index') }}">
+
+            <li>
+                <a class="sidebar-group-toggle" data-bs-toggle="collapse" href="#configurationMenu" role="button" aria-expanded="{{ $configurationOpen ? 'true' : 'false' }}" aria-controls="configurationMenu">
                     <i class="fas fa-cogs"></i>
-                    <span>{{ __('System Settings') }}</span>
+                    <span>{{ __('Configuration') }}</span>
+                    <i class="fas fa-plus menu-caret plus-icon"></i>
+                    <i class="fas fa-minus menu-caret minus-icon"></i>
                 </a>
+                <ul id="configurationMenu" class="sidebar-submenu collapse {{ $configurationOpen ? 'show' : '' }}">
+                    <li><a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">{{ __('System Settings') }}</a></li>
+                </ul>
             </li>
         </ul>
     </aside>

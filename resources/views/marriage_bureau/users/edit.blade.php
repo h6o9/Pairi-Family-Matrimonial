@@ -25,11 +25,10 @@
             @endif
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('marriage-bureau.users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
+                    <form id="mb-user-form" action="{{ route('marriage-bureau.users.update', $user->id) }}" method="POST" enctype="multipart/form-data" autocomplete="off">
                         @csrf
                         @method('PUT')
                         @include('marriage_bureau.users._form', ['user' => $user])
-                        <button type="submit" class="btn btn-warning mt-3"><i class="fas fa-save"></i> Update User</button>
                     </form>
                 </div>
             </div>
@@ -45,6 +44,9 @@
             placeholder: 'Select languages',
             width: '100%'
         });
+
+        initMbUserFormTabs(@json(session('active_tab', request('tab', 'tab-basic'))));
     });
 </script>
+@include('marriage_bureau.users._form_tabs_js')
 @endpush

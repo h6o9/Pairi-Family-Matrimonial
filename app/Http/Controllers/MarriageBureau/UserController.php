@@ -45,7 +45,7 @@ class UserController extends Controller
             $this->storePhoto($request, $user);
         }
 
-        return redirect()->route('marriage-bureau.users.index')->with(['message' => 'User created successfully.', 'alert-type' => 'success']);
+        return $this->redirectAfterSave($request, $user, 'User created successfully.');
     }
 
     public function show(User $user)
@@ -81,7 +81,7 @@ class UserController extends Controller
             $this->storePhoto($request, $user);
         }
 
-        return redirect()->route('marriage-bureau.users.index')->with(['message' => 'User updated successfully.', 'alert-type' => 'success']);
+        return $this->redirectAfterSave($request, $user, 'User updated successfully.');
     }
 
     public function destroy(User $user)
@@ -95,6 +95,34 @@ class UserController extends Controller
     private function authorizeBureauUser(User $user): void
     {
         abort_unless($user->marriage_bureau_id === Auth::guard('marriage_bureau')->id(), 403);
+    }
+
+    private function redirectAfterSave(Request $request, User $user, string $message)
+    {
+        $flash = ['message' => $message, 'alert-type' => 'success'];
+
+        if ($request->input('save_action') === 'save_next') {
+            $nextTab = $this->nextTabId($request->input('active_tab', 'tab-basic'));
+
+            return redirect()
+                ->route('marriage-bureau.users.edit', $user->id)
+                ->with($flash)
+                ->with('active_tab', $nextTab);
+        }
+
+        return redirect()->route('marriage-bureau.users.index')->with($flash);
+    }
+
+    private function nextTabId(?string $currentTab): string
+    {
+        $tabs = ['tab-basic', 'tab-education', 'tab-physical', 'tab-faith', 'tab-about'];
+        $index = array_search($currentTab, $tabs, true);
+
+        if ($index === false || $index >= count($tabs) - 1) {
+            return 'tab-about';
+        }
+
+        return $tabs[$index + 1];
     }
 
     private function validatedData(Request $request, bool $isCreate, ?User $user = null): array

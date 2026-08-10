@@ -116,7 +116,9 @@ class UserController extends Controller
             $subscription->payment_screenshot = $path;
             $subscription->status = 'verified';
             $subscription->starts_at = now();
-            $subscription->expires_at = now()->addDays($subscription->plan->duration_days ?? 30);
+            $subscription->expires_at = $subscription->plan
+                ? $subscription->plan->expiresAtFrom(now())
+                : now()->addDays(30);
             $subscription->save();
 
             return response()->json([

@@ -13,52 +13,32 @@ class SubscriptionController extends Controller
         try {
             return response()->json([
                 'success' => 200,
-                'subscriptions' => Subscription::all(),
+                'subscriptions' => Subscription::whereIn('type', ['Free', 'VIP', 'VVIP'])
+                    ->orderByRaw("FIELD(type, 'Free', 'VIP', 'VVIP')")
+                    ->get(),
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch subscriptions',
-                'error' => config('app.debug') ? $e->getMessage() : null
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
     public function store(Request $request)
     {
-        try {
-            $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'price' => 'required|numeric|min:0',
-                'duration_days' => 'required|integer|min:1',
-                'type' => 'required|string',
-                'badge' => 'nullable|string',
-                'features' => 'nullable|array',
-                'status' => 'nullable|string|in:active,inactive',
-            ]);
-
-            $subscription = Subscription::create($data);
-
-            return response()->json([
-                'success' => 200,
-                'message' => 'Subscription created successfully',
-                'subscription' => $subscription,
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create subscription',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Creating new subscription plans is disabled. Only Free, VIP and VVIP plans exist.',
+        ], 403);
     }
 
     public function show($id)
     {
         try {
             $subscription = Subscription::findOrFail($id);
+
             return response()->json([
                 'success' => 200,
                 'subscription' => $subscription,
@@ -69,7 +49,7 @@ class SubscriptionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch subscription',
-                'error' => config('app.debug') ? $e->getMessage() : null
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -80,21 +60,21 @@ class SubscriptionController extends Controller
             $subscription = Subscription::findOrFail($id);
 
             $data = $request->validate([
-                'name' => 'sometimes|string|max:255',
-                'price' => 'sometimes|numeric|min:0',
-                'duration_days' => 'sometimes|integer|min:1',
-                'type' => 'sometimes|string',
-                'badge' => 'nullable|string',
-                'features' => 'nullable|array',
-                'status' => 'sometimes|string|in:active,inactive',
+                'price' => 'required|numeric|min:0',
+                'duration_days' => 'required|integer|min:1',
+                'duration_unit' => 'required|in:days,months',
             ]);
+
+            if ($subscription->type === 'Free') {
+                $data['price'] = 0;
+            }
 
             $subscription->update($data);
 
             return response()->json([
                 'success' => 200,
                 'message' => 'Subscription updated successfully',
-                'subscription' => $subscription,
+                'subscription' => $subscription->fresh(),
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
@@ -104,29 +84,16 @@ class SubscriptionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update subscription',
-                'error' => config('app.debug') ? $e->getMessage() : null
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
     public function destroy($id)
     {
-        try {
-            $subscription = Subscription::findOrFail($id);
-            $subscription->delete();
-
-            return response()->json([
-                'success' => 200,
-                'message' => 'Subscription deleted successfully',
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['success' => false, 'message' => 'Subscription not found'], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete subscription',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Subscription plans cannot be deleted.',
+        ], 403);
     }
 }

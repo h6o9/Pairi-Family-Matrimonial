@@ -1,5 +1,9 @@
 @extends('website.layouts.app')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('global/css/password-toggle.css') }}">
+@endpush
+
 @section('content')
     @yield('user-breadcrumb')
 
@@ -128,4 +132,5 @@
             </div>
         </div>
     </section>
+    <script src="{{ asset('global/js/password-toggle.js') }}"></script>
 @endsection
