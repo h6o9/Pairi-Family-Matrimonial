@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -26,9 +27,9 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $this->validatedData($request, true);
+        $validated = $this->validatedData($request);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $validated['password'] = Hash::make(Str::random(40));
         $validated['marriage_bureau_id'] = Auth::guard('marriage_bureau')->id();
 
         // Profiles created by a marriage bureau are display-only: they must never
@@ -71,11 +72,7 @@ class UserController extends Controller
     {
         $this->authorizeBureauUser($user);
 
-        $validated = $this->validatedData($request, false, $user);
-
-        if ($request->filled('password')) {
-            $validated['password'] = Hash::make($request->password);
-        }
+        $validated = $this->validatedData($request, $user);
 
         // Keep the profile flagged as active/complete so it remains visible on the app.
         $validated['profile_completed'] = true;
@@ -130,7 +127,7 @@ class UserController extends Controller
         return $tabs[$index + 1];
     }
 
-    private function validatedData(Request $request, bool $isCreate, ?User $user = null): array
+    private function validatedData(Request $request, ?User $user = null): array
     {
         $rules = [
             'name' => 'required|string|max:255',
@@ -171,8 +168,6 @@ class UserController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ];
 
-        $rules['password'] = $isCreate ? 'required|min:6' : 'nullable|min:6';
-
         $validated = $request->validate($rules);
 
         unset($validated['photo']);
@@ -182,10 +177,6 @@ class UserController extends Controller
         $validated['interests'] = array_values(array_filter($request->input('interests', [])));
 
         $validated['other_languages'] = $request->other_languages ?? [];
-
-        if (!$isCreate) {
-            unset($validated['password']);
-        }
 
         return $validated;
     }
@@ -198,16 +189,12 @@ class UserController extends Controller
                 'marital-statuses',
                 'qualifications',
                 'fields-of-study',
-                'universities',
-                'graduation-years',
                 'employment-types',
                 'incomes',
                 'residences',
                 'body-types',
                 'complexions',
                 'religions',
-                'communities',
-                'sub-communities',
                 'mother-tongues',
                 'languages',
                 'hobbies-interests',

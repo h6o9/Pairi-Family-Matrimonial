@@ -27,6 +27,23 @@
     color: #7B1E3A;
 }
 
+.sidebar-brand.panel-logo-brand {
+    height: auto !important;
+    min-height: 82px;
+    padding: 7px 10px;
+}
+
+.panel-brand-logo {
+    width: 145px;
+    height: 68px;
+    object-fit: contain;
+}
+
+.sidebar-brand-sm .panel-brand-logo {
+    width: 42px;
+    height: 42px;
+}
+
 .sidebar-menu {
     list-style: none;
     padding: 0 0 20px 0;
@@ -154,9 +171,14 @@ body.sidebar-gone .main-sidebar .sidebar-submenu {
 
 <div class="main-sidebar">
     <aside id="sidebar-wrapper">
-        <div class="sidebar-brand">
+        <div class="sidebar-brand panel-logo-brand">
             <a href="{{ route('admin.dashboard') }}">
-                <span class="brand-text">Piyari Family</span>
+                <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="Piyari Family" class="panel-brand-logo">
+            </a>
+        </div>
+        <div class="sidebar-brand sidebar-brand-sm">
+            <a href="{{ route('admin.dashboard') }}">
+                <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="PF" class="panel-brand-logo">
             </a>
         </div>
 
@@ -223,7 +245,7 @@ body.sidebar-gone .main-sidebar .sidebar-submenu {
                 </a>
                 <ul id="profileSettingsMenu" class="sidebar-submenu collapse {{ $profileSettingsOpen ? 'show' : '' }}" data-bs-parent="#adminSidebarMenu">
                     @foreach(config('profile_lookups', []) as $lookupType => $lookup)
-                        @continue(in_array($lookupType, ['communities', 'sub-communities', 'graduation-years', 'universities'], true))
+                        @continue(in_array($lookupType, ['physical-body-types', 'physical-disabilities', 'communities', 'sub-communities', 'graduation-years', 'universities'], true))
                         <li>
                             <a href="{{ route('admin.lookups.index', ['type' => $lookupType]) }}" class="{{ request()->routeIs('admin.lookups.*') && request()->route('type') === $lookupType ? 'active' : '' }}">
                                 {{ __($lookup['label']) }}

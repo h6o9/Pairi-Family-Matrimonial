@@ -21,7 +21,7 @@ class SettingController extends Controller
         if ($section === 'invite') {
             $data = $request->validate([
                 'invite_reward_points' => 'required|numeric|min:0',
-                'point_value_pkr' => 'required|numeric|min:0',
+                'point_value_pkr' => 'sometimes|required|numeric|min:0',
             ]);
             $message = 'Reward points and PKR value updated successfully.';
         } elseif ($section === 'redeem') {
@@ -35,7 +35,7 @@ class SettingController extends Controller
         } else {
             $data = $request->validate([
                 'invite_reward_points' => 'required|numeric|min:0',
-                'point_value_pkr' => 'required|numeric|min:0',
+                'point_value_pkr' => 'sometimes|required|numeric|min:0',
                 'redeem_vip_points' => 'required|numeric|min:0',
                 'redeem_vvip_points' => 'required|numeric|min:0',
                 'redeem_boost_points' => 'required|numeric|min:0',

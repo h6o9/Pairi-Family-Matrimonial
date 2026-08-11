@@ -202,3 +202,10 @@ INSERT IGNORE INTO `employment_types` (`name`, `status`) VALUES
 
 INSERT IGNORE INTO `residence_statuses` (`name`, `status`) VALUES
 ('Owned','active'),('Rented','active'),('Family Owned','active'),('Other','active');
+
+INSERT IGNORE INTO `hobbies_interests` (`name`, `status`, `created_at`, `updated_at`) VALUES
+('Reading','active',NOW(),NOW()),
+('Travelling','active',NOW(),NOW()),
+('Cooking','active',NOW(),NOW()),
+('Sports','active',NOW(),NOW()),
+('Music','active',NOW(),NOW());

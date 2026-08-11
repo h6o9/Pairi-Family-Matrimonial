@@ -27,10 +27,6 @@
                 <input type="email" name="email" class="form-control" value="{{ $old('email') }}" required>
             </div>
             <div class="form-group col-md-6">
-                <label>Password @if($u) (Leave blank to keep current) @else <span class="text-danger">*</span> @endif</label>
-                <input type="password" name="password" class="form-control" value="" autocomplete="new-password" {{ $u ? '' : 'required' }}>
-            </div>
-            <div class="form-group col-md-6">
                 <label>Phone</label>
                 <input type="text" name="phone" class="form-control" value="{{ $old('phone') }}">
             </div>
@@ -93,21 +89,11 @@
             </div>
             <div class="form-group col-md-6">
                 <label>University</label>
-                <select name="university" class="form-control">
-                    <option value="">Select</option>
-                    @foreach($lookups['universities'] as $university)
-                        <option value="{{ $university }}" {{ $selected('university', $university) }}>{{ $university }}</option>
-                    @endforeach
-                </select>
+                <input type="text" name="university" class="form-control" value="{{ $old('university') }}" placeholder="Enter university">
             </div>
             <div class="form-group col-md-6">
                 <label>Graduation Year</label>
-                <select name="graduation_year" class="form-control">
-                    <option value="">Select</option>
-                    @foreach($lookups['graduation-years'] as $year)
-                        <option value="{{ $year }}" {{ $selected('graduation_year', $year) }}>{{ $year }}</option>
-                    @endforeach
-                </select>
+                <input type="text" name="graduation_year" class="form-control" value="{{ $old('graduation_year') }}" placeholder="e.g. 2026" maxlength="10">
             </div>
             <div class="form-group col-md-4">
                 <label>Employment Type</label>
@@ -199,21 +185,11 @@
             </div>
             <div class="form-group col-md-6">
                 <label>Community</label>
-                <select name="community" class="form-control">
-                    <option value="">Select</option>
-                    @foreach($lookups['communities'] as $community)
-                        <option value="{{ $community }}" {{ $selected('community', $community) }}>{{ $community }}</option>
-                    @endforeach
-                </select>
+                <input type="text" name="community" class="form-control" value="{{ $old('community') }}" placeholder="Enter community">
             </div>
             <div class="form-group col-md-6">
                 <label>Sub Community</label>
-                <select name="sect" class="form-control">
-                    <option value="">Select</option>
-                    @foreach($lookups['sub-communities'] as $community)
-                        <option value="{{ $community }}" {{ $selected('sect', $community) }}>{{ $community }}</option>
-                    @endforeach
-                </select>
+                <input type="text" name="sect" class="form-control" value="{{ $old('sect') }}" placeholder="Enter sub community">
             </div>
             <div class="form-group col-md-6">
                 <label>Mother Tongue</label>

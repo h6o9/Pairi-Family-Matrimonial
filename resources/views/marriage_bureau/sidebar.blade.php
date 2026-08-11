@@ -1,4 +1,21 @@
 <style>
+    .sidebar-brand.panel-logo-brand {
+        height: auto !important;
+        min-height: 82px;
+        padding: 7px 10px;
+    }
+
+    .panel-brand-logo {
+        width: 145px;
+        height: 68px;
+        object-fit: contain;
+    }
+
+    .sidebar-brand-sm .panel-brand-logo {
+        width: 42px;
+        height: 42px;
+    }
+
     .mb-sidebar-group {
         border-bottom: 1px solid #eeeeee;
     }
@@ -79,11 +96,15 @@
 
 <div class="main-sidebar">
     <aside id="sidebar-wrapper">
-        <div class="sidebar-brand">
-            <a href="{{ route('marriage-bureau.dashboard') }}">Piyari Family</a>
+        <div class="sidebar-brand panel-logo-brand">
+            <a href="{{ route('marriage-bureau.dashboard') }}">
+                <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="Piyari Family" class="panel-brand-logo">
+            </a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
-            <a href="{{ route('marriage-bureau.dashboard') }}">PF</a>
+            <a href="{{ route('marriage-bureau.dashboard') }}">
+                <img src="{{ asset('assets/img/piyari_logo.png') }}" alt="PF" class="panel-brand-logo">
+            </a>
         </div>
         @php
             $subscriptionsOpen = request()->routeIs('marriage-bureau.subscription.*');

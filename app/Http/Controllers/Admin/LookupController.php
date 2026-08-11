@@ -35,9 +35,9 @@ class LookupController extends Controller
         $start = max(0, (int) $request->input('start', 0));
         $length = min(100, max(10, (int) $request->input('length', 10)));
         $orderColumns = ['id', 'name', 'status'];
-        $orderIndex = (int) $request->input('order.0.column', 1);
-        $orderColumn = $orderColumns[$orderIndex] ?? 'name';
-        $orderDirection = $request->input('order.0.dir') === 'desc' ? 'desc' : 'asc';
+        $orderIndex = (int) $request->input('order.0.column', 0);
+        $orderColumn = $orderColumns[$orderIndex] ?? 'id';
+        $orderDirection = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
 
         $items = $query
             ->orderBy($orderColumn, $orderDirection)

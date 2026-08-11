@@ -42,7 +42,7 @@
             ajax: @json(route('admin.lookups.data', ['type' => $type])),
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-            order: [[1, 'asc']],
+            order: [[0, 'desc']],
             columns: [
                 { data: 'row_number', name: 'id', searchable: false },
                 { data: 'name', name: 'name' },

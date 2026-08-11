@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,6 +17,14 @@ return new class extends Migration
                 $table->timestamps();
             });
         }
+
+        DB::table('hobbies_interests')->insertOrIgnore([
+            ['name' => 'Reading', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Travelling', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Cooking', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Sports', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Music', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 
     public function down(): void
