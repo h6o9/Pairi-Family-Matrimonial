@@ -174,14 +174,40 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        $photos = [];
-        $mainIndex = (int) $request->input('main_index', 0);
+        $photos = array_values($user->photos ?? []);
+        if (count($photos) + count($uploadedFiles) > 10) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A user can have a maximum of 10 profile photos.',
+            ], 422);
+        }
+
+        $mainIndex = $request->filled('main_index')
+            ? (int) $request->input('main_index')
+            : null;
+
+        if ($mainIndex !== null && $mainIndex >= count($uploadedFiles)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The selected main photo does not exist.',
+            ], 422);
+        }
+
+        $hasMainPhoto = collect($photos)->contains(fn ($photo) => (bool) ($photo['is_main'] ?? false));
+        if ($mainIndex !== null) {
+            foreach ($photos as &$existingPhoto) {
+                $existingPhoto['is_main'] = false;
+            }
+            unset($existingPhoto);
+        }
 
         foreach ($uploadedFiles as $index => $photo) {
             $path = $photo->store('profiles/' . $user->id, 'public');
             $photos[] = [
                 'path' => $path,
-                'is_main' => $index === $mainIndex,
+                'is_main' => $mainIndex !== null
+                    ? $index === $mainIndex
+                    : (!$hasMainPhoto && $index === 0),
             ];
         }
 
@@ -198,6 +224,43 @@ class ProfileController extends Controller
     }
 }
 
+    public function setMainPhoto(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'photo_index' => 'required|integer|min:0',
+            ]);
+
+            $user = $request->user();
+            $photos = array_values($user->photos ?? []);
+            $selectedIndex = (int) $data['photo_index'];
+
+            if (!array_key_exists($selectedIndex, $photos)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected photo does not exist.',
+                ], 422);
+            }
+
+            foreach ($photos as $index => &$photo) {
+                $photo['is_main'] = $index === $selectedIndex;
+            }
+            unset($photo);
+
+            $user->update(['photos' => $photos]);
+
+            return $this->success($user, 'Profile photo updated.');
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to set profile photo.', $e);
+        }
+    }
+
     private function collectUploadedPhotos(Request $request): array
     {
         $files = $request->file('photos');
@@ -212,30 +275,20 @@ class ProfileController extends Controller
     public function updateProfile(Request $request): JsonResponse
     {
         try {
-            // 
-
             $user = $request->user();
-            $data = $request->only([
-                'name', 'birthday', 'gender', 'bio', 'email', 'phone',
-                'city', 'country', 'height', 'mother_tongue', 'marital_status',
-                'community', 'residential_status',
+            $data = $request->validate([
+                'city' => 'sometimes|nullable|string|max:100',
+                'country' => 'sometimes|nullable|string|max:100',
+                'height' => 'sometimes|nullable|string|max:50',
+                'mother_tongue' => 'sometimes|nullable|string|max:100',
+                'other_languages' => 'sometimes|nullable|array',
+                'other_languages.*' => 'string|max:100',
+                'marital_status' => 'sometimes|nullable|string|max:50',
+                'community' => 'sometimes|nullable|string|max:100',
+                'residential_status' => 'sometimes|nullable|string|max:100',
             ]);
 
-            if ($request->has('other_languages')) {
-                $data['other_languages'] = $request->other_languages;
-            }
-            if ($request->has('interests')) {
-                $data['interests'] = $request->interests;
-            }
-
-            if ($request->hasFile('photo')) {
-                $path = $request->file('photo')->store('profiles/' . $user->id, 'public');
-                $photos = $user->photos ?? [];
-                array_unshift($photos, ['path' => $path, 'is_main' => true]);
-                $data['photos'] = $photos;
-            }
-
-            $user->update(array_filter($data, fn ($v) => $v !== null));
+            $user->update($data);
 
             return $this->success($user->fresh(), 'Profile updated.');
         } catch (ValidationException $e) {
